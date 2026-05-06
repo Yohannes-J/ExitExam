@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// In dev, Vite proxies /api → http://localhost:5000
-// Set VITE_API_URL in .env to override (e.g. for production)
-const baseURL = import.meta.env.VITE_API_URL || '/api';
+// Hardcoded fallback ensures it always points to the Express server
+const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api';
 
 const api = axios.create({ baseURL });
 
