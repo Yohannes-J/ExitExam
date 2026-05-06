@@ -199,13 +199,22 @@ export default function ExamPage() {
             >
               ← Previous
             </button>
-            <button
-              onClick={() => setCurrentQ((q) => Math.min(totalQ - 1, q + 1))}
-              disabled={currentQ === totalQ - 1}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-medium px-5 py-2 rounded-lg transition"
-            >
-              Next →
-            </button>
+            {currentQ === totalQ - 1 ? (
+              <button
+                onClick={() => handleSubmit(false)}
+                disabled={submitting}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition"
+              >
+                {submitting ? 'Submitting...' : '✓ Finish Exam'}
+              </button>
+            ) : (
+              <button
+                onClick={() => setCurrentQ((q) => Math.min(totalQ - 1, q + 1))}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg transition"
+              >
+                Next →
+              </button>
+            )}
           </div>
         </div>
 
