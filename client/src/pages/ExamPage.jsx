@@ -14,15 +14,13 @@ export default function ExamPage() {
   const [error, setError] = useState('');
   const [started, setStarted] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const startTimeRef = useRef(null);
   const timeLeftRef = useRef(0);
 
   useEffect(() => {
     api.get(`/exams/${id}`)
-      .then((res) => {
-        setExam(res.data);
-        timeLeftRef.current = res.data.duration * 60;
-      })
+      .then((res) => { setExam(res.data); timeLeftRef.current = res.data.duration * 60; })
       .catch((err) => setError(err.response?.data?.message || 'Failed to load exam'))
       .finally(() => setLoading(false));
   }, [id]);
@@ -37,12 +35,10 @@ export default function ExamPage() {
     const timeTaken = startTimeRef.current
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
       : exam.duration * 60;
-
     const payload = exam.questions.map((q, i) => ({
       questionId: q._id,
       selectedIndex: answers[i] ?? -1,
     }));
-
     try {
       const { data } = await api.post(`/exams/${id}/submit`, { answers: payload, timeTaken });
       navigate(`/results/${data.result._id}`, { state: { fresh: true } });
@@ -52,10 +48,7 @@ export default function ExamPage() {
     }
   }, [answers, exam, id, navigate, confirmSubmit]);
 
-  const handleTimeUp = useCallback(() => {
-    handleSubmit(true);
-  }, [handleSubmit]);
-
+  const handleTimeUp = useCallback(() => { handleSubmit(true); }, [handleSubmit]);
   const handleTick = (t) => { timeLeftRef.current = t; };
 
   const answeredCount = Object.keys(answers).length;
@@ -69,11 +62,12 @@ export default function ExamPage() {
 
   if (error) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-2xl shadow p-8 max-w-md text-center">
+      <div className="bg-white rounded-2xl shadow p-6 sm:p-8 max-w-md w-full text-center">
         <div className="text-5xl mb-4">⚠️</div>
         <h2 className="text-xl font-bold text-gray-800 mb-2">Cannot Load Exam</h2>
-        <p className="text-gray-500 mb-6">{error}</p>
-        <button onClick={() => navigate('/dashboard')} className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+        <p className="text-gray-500 mb-6 text-sm">{error}</p>
+        <button onClick={() => navigate('/dashboard')}
+          className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto">
           Back to Dashboard
         </button>
       </div>
@@ -82,27 +76,25 @@ export default function ExamPage() {
 
   // Start screen
   if (!started) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
+      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-lg w-full">
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">📝</div>
-          <h1 className="text-2xl font-bold text-gray-800">{exam.title}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{exam.title}</h1>
           <p className="text-indigo-600 font-medium mt-1">{exam.subject}</p>
         </div>
         {exam.description && <p className="text-gray-500 text-sm text-center mb-6">{exam.description}</p>}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-indigo-50 rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold text-indigo-700">{exam.duration}</div>
-            <div className="text-xs text-gray-500">Minutes</div>
-          </div>
-          <div className="bg-purple-50 rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold text-purple-700">{totalQ}</div>
-            <div className="text-xs text-gray-500">Questions</div>
-          </div>
-          <div className="bg-green-50 rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold text-green-700">{exam.passingScore}%</div>
-            <div className="text-xs text-gray-500">Pass Score</div>
-          </div>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
+          {[
+            { label: 'Minutes', value: exam.duration, color: 'indigo' },
+            { label: 'Questions', value: totalQ, color: 'purple' },
+            { label: 'Pass Score', value: `${exam.passingScore}%`, color: 'green' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className={`bg-${color}-50 rounded-xl p-3 text-center`}>
+              <div className={`text-xl sm:text-2xl font-bold text-${color}-700`}>{value}</div>
+              <div className="text-xs text-gray-500">{label}</div>
+            </div>
+          ))}
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-sm text-yellow-800">
           <strong>⚠️ Instructions:</strong>
@@ -127,59 +119,57 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top bar */}
+      {/* Sticky top bar */}
       <div className="bg-white border-b shadow-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-gray-800 truncate">{exam.title}</h1>
+            <h1 className="font-bold text-gray-800 truncate text-sm sm:text-base">{exam.title}</h1>
             <p className="text-xs text-gray-500">{answeredCount}/{totalQ} answered</p>
           </div>
-          <CountdownTimer
-            durationSeconds={exam.duration * 60}
-            onTimeUp={handleTimeUp}
-            onTick={handleTick}
-          />
+          <CountdownTimer durationSeconds={exam.duration * 60} onTimeUp={handleTimeUp} onTick={handleTick} />
+          {/* Mobile sidebar toggle */}
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="lg:hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition"
+          >
+            📋 {answeredCount}/{totalQ}
+          </button>
           <button
             onClick={() => handleSubmit(false)}
             disabled={submitting}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm whitespace-nowrap"
+            className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm whitespace-nowrap"
           >
-            {submitting ? 'Submitting...' : 'Submit Exam'}
+            {submitting ? '...' : 'Submit'}
           </button>
         </div>
-        {/* Progress bar */}
         <div className="h-1 bg-gray-100">
-          <div
-            className="h-full bg-indigo-500 transition-all duration-300"
-            style={{ width: `${(answeredCount / totalQ) * 100}%` }}
-          />
+          <div className="h-full bg-indigo-500 transition-all duration-300"
+            style={{ width: `${(answeredCount / totalQ) * 100}%` }} />
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6 flex gap-6">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex gap-4 lg:gap-6">
         {/* Question panel */}
-        <div className="flex-1">
-          <div className="bg-white rounded-2xl shadow-sm p-6 mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-4">
             <div className="flex items-center gap-2 mb-4">
-              <span className="bg-indigo-100 text-indigo-700 text-sm font-bold px-3 py-1 rounded-full">
+              <span className="bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-bold px-3 py-1 rounded-full">
                 Q{currentQ + 1} / {totalQ}
               </span>
-              <span className="text-xs text-gray-400">{question.points} point{question.points !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-gray-400">{question.points} pt{question.points !== 1 ? 's' : ''}</span>
             </div>
-            <p className="text-gray-800 text-lg font-medium leading-relaxed mb-6">{question.text}</p>
-
-            <div className="space-y-3">
+            <p className="text-gray-800 text-base sm:text-lg font-medium leading-relaxed mb-5 sm:mb-6">
+              {question.text}
+            </p>
+            <div className="space-y-2 sm:space-y-3">
               {question.options.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSelect(currentQ, i)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition font-medium ${
+                <button key={i} onClick={() => handleSelect(currentQ, i)}
+                  className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition font-medium text-sm sm:text-base ${
                     answers[currentQ] === i
                       ? 'border-indigo-500 bg-indigo-50 text-indigo-800'
                       : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
-                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-bold mr-3 ${
+                  }`}>
+                  <span className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-bold mr-2 sm:mr-3 shrink-0 ${
                     answers[currentQ] === i ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {String.fromCharCode(65 + i)}
@@ -191,55 +181,46 @@ export default function ExamPage() {
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-between">
-            <button
-              onClick={() => setCurrentQ((q) => Math.max(0, q - 1))}
+          <div className="flex justify-between gap-3">
+            <button onClick={() => setCurrentQ((q) => Math.max(0, q - 1))}
               disabled={currentQ === 0}
-              className="bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 text-gray-700 font-medium px-5 py-2 rounded-lg transition"
-            >
-              ← Previous
+              className="flex-1 sm:flex-none bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-40 text-gray-700 font-medium px-4 sm:px-5 py-2.5 rounded-lg transition text-sm">
+              ← Prev
             </button>
             {currentQ === totalQ - 1 ? (
-              <button
-                onClick={() => handleSubmit(false)}
-                disabled={submitting}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition"
-              >
+              <button onClick={() => handleSubmit(false)} disabled={submitting}
+                className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition text-sm">
                 {submitting ? 'Submitting...' : '✓ Finish Exam'}
               </button>
             ) : (
-              <button
-                onClick={() => setCurrentQ((q) => Math.min(totalQ - 1, q + 1))}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg transition"
-              >
+              <button onClick={() => setCurrentQ((q) => Math.min(totalQ - 1, q + 1))}
+                className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 sm:px-5 py-2.5 rounded-lg transition text-sm">
                 Next →
               </button>
             )}
           </div>
         </div>
 
-        {/* Question grid sidebar */}
-        <div className="w-48 shrink-0">
-          <div className="bg-white rounded-2xl shadow-sm p-4 sticky top-24">
-            <h3 className="text-sm font-bold text-gray-600 mb-3">Questions</h3>
+        {/* Question grid sidebar — hidden on mobile unless toggled */}
+        <div className={`${showSidebar ? 'fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/40 lg:bg-transparent lg:static lg:inset-auto lg:z-auto lg:flex' : 'hidden lg:block'} lg:w-44 lg:shrink-0`}>
+          <div className="bg-white rounded-2xl shadow-lg lg:shadow-sm p-4 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:sticky lg:top-24 mx-4 sm:mx-0 mb-4 lg:mb-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-600">Questions</h3>
+              <button onClick={() => setShowSidebar(false)} className="lg:hidden text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+            </div>
             <div className="grid grid-cols-5 gap-1.5">
               {exam.questions.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentQ(i)}
+                <button key={i} onClick={() => { setCurrentQ(i); setShowSidebar(false); }}
                   className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                    i === currentQ
-                      ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
-                      : answers[i] !== undefined
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
+                    i === currentQ ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
+                    : answers[i] !== undefined ? 'bg-green-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
                   {i + 1}
                 </button>
               ))}
             </div>
-            <div className="mt-4 space-y-1.5 text-xs text-gray-500">
+            <div className="mt-3 space-y-1.5 text-xs text-gray-500">
               <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-green-500 inline-block"></span> Answered</div>
               <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-gray-200 inline-block"></span> Unanswered</div>
               <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-indigo-600 inline-block"></span> Current</div>
@@ -250,29 +231,24 @@ export default function ExamPage() {
 
       {/* Confirm submit modal */}
       {confirmSubmit && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-sm text-center">
             <div className="text-5xl mb-4">📤</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">Submit Exam?</h2>
             <p className="text-gray-500 text-sm mb-2">
-              You have answered <strong>{answeredCount}</strong> of <strong>{totalQ}</strong> questions.
+              You answered <strong>{answeredCount}</strong> of <strong>{totalQ}</strong> questions.
             </p>
             {answeredCount < totalQ && (
-              <p className="text-yellow-600 text-sm mb-4">⚠️ {totalQ - answeredCount} question(s) unanswered.</p>
+              <p className="text-yellow-600 text-sm mb-4">⚠️ {totalQ - answeredCount} unanswered.</p>
             )}
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setConfirmSubmit(false)}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
-              >
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setConfirmSubmit(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">
                 Cancel
               </button>
-              <button
-                onClick={() => handleSubmit(true)}
-                disabled={submitting}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition font-semibold"
-              >
-                {submitting ? 'Submitting...' : 'Confirm Submit'}
+              <button onClick={() => handleSubmit(true)} disabled={submitting}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg transition font-semibold text-sm">
+                {submitting ? 'Submitting...' : 'Confirm'}
               </button>
             </div>
           </div>

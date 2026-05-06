@@ -7,7 +7,7 @@ export default function AdminStudents() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [modal, setModal] = useState(null); // null | 'create' | 'edit' | 'delete'
+  const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -16,80 +16,35 @@ export default function AdminStudents() {
 
   const load = () => {
     setLoading(true);
-    api.get('/admin/students')
-      .then((res) => setStudents(res.data))
-      .finally(() => setLoading(false));
+    api.get('/admin/students').then((res) => setStudents(res.data)).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(); }, []);
 
-  const openCreate = () => {
-    setForm(emptyForm);
-    setError('');
-    setModal('create');
-  };
-
-  const openEdit = (student) => {
-    setSelected(student);
-    setForm({ name: student.name, studentId: student.studentId, email: student.email, department: student.department || '', password: '' });
-    setError('');
-    setModal('edit');
-  };
-
-  const openDelete = (student) => {
-    setSelected(student);
-    setModal('delete');
-  };
-
+  const openCreate = () => { setForm(emptyForm); setError(''); setModal('create'); };
+  const openEdit = (s) => { setSelected(s); setForm({ name: s.name, studentId: s.studentId, email: s.email, department: s.department || '', password: '' }); setError(''); setModal('edit'); };
+  const openDelete = (s) => { setSelected(s); setModal('delete'); };
   const closeModal = () => { setModal(null); setSelected(null); setError(''); };
 
   const handleCreate = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSaving(true);
-    try {
-      await api.post('/admin/students', form);
-      setSuccess('Student created successfully');
-      closeModal();
-      load();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create student');
-    } finally {
-      setSaving(false);
-    }
+    e.preventDefault(); setError(''); setSaving(true);
+    try { await api.post('/admin/students', form); setSuccess('Student created'); closeModal(); load(); setTimeout(() => setSuccess(''), 3000); }
+    catch (err) { setError(err.response?.data?.message || 'Failed to create'); }
+    finally { setSaving(false); }
   };
 
   const handleEdit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSaving(true);
-    try {
-      await api.put(`/admin/students/${selected._id}`, form);
-      setSuccess('Student updated successfully');
-      closeModal();
-      load();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update student');
-    } finally {
-      setSaving(false);
-    }
+    e.preventDefault(); setError(''); setSaving(true);
+    try { await api.put(`/admin/students/${selected._id}`, form); setSuccess('Student updated'); closeModal(); load(); setTimeout(() => setSuccess(''), 3000); }
+    catch (err) { setError(err.response?.data?.message || 'Failed to update'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     setSaving(true);
-    try {
-      await api.delete(`/admin/students/${selected._id}`);
-      setSuccess('Student deleted');
-      closeModal();
-      load();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete');
-    } finally {
-      setSaving(false);
-    }
+    try { await api.delete(`/admin/students/${selected._id}`); setSuccess('Student deleted'); closeModal(); load(); setTimeout(() => setSuccess(''), 3000); }
+    catch (err) { setError(err.response?.data?.message || 'Failed to delete'); }
+    finally { setSaving(false); }
   };
 
   const filtered = students.filter((s) =>
@@ -102,53 +57,41 @@ export default function AdminStudents() {
   const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-5xl mx-auto">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Manage Students</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{students.length} registered student{students.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Students</h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{students.length} student{students.length !== 1 ? 's' : ''}</p>
           </div>
-          <button
-            onClick={openCreate}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
-          >
-            <span className="text-lg leading-none">+</span> Add Student
+          <button onClick={openCreate}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition text-sm flex items-center gap-1.5">
+            <span>+</span> Add Student
           </button>
         </div>
 
-        {/* Success banner */}
         {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center gap-2">
-            <span>✓</span> {success}
-          </div>
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">✓ {success}</div>
         )}
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search by name, student ID, email, or department..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-4"
-        />
+        <input type="text" placeholder="Search by name, ID, email, or department..."
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-4" />
 
-        {/* Table */}
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-gray-400 bg-white rounded-2xl shadow-sm">
+            <div className="text-5xl mb-3">👥</div>
+            <p className="font-medium">No students found</p>
+            <p className="text-sm mt-1">Click "Add Student" to create the first account</p>
+          </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            {filtered.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
-                <div className="text-5xl mb-3">👥</div>
-                <p className="font-medium">No students found</p>
-                <p className="text-sm mt-1">Click "Add Student" to create the first account</p>
-              </div>
-            ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden sm:block bg-white rounded-2xl shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -172,116 +115,92 @@ export default function AdminStudents() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 font-mono text-xs">{s.studentId}</td>
-                      <td className="px-4 py-3 text-gray-500">{s.email}</td>
-                      <td className="px-4 py-3 text-gray-500">{s.department || <span className="text-gray-300">—</span>}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{s.email}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{s.department || '—'}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(s.createdAt)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => openEdit(s)}
-                            className="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-medium transition"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => openDelete(s)}
-                            className="text-xs px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition"
-                          >
-                            Delete
-                          </button>
+                          <button onClick={() => openEdit(s)}
+                            className="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-medium transition">Edit</button>
+                          <button onClick={() => openDelete(s)}
+                            className="text-xs px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition">Delete</button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="sm:hidden space-y-3">
+              {filtered.map((s) => (
+                <div key={s._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">
+                      {s.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-800 text-sm">{s.name}</p>
+                      <p className="text-xs text-gray-400 font-mono">{s.studentId}</p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 space-y-1 mb-3">
+                    <p>📧 {s.email}</p>
+                    <p>🏛 {s.department || '—'}</p>
+                    <p>📅 {formatDate(s.createdAt)}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEdit(s)}
+                      className="flex-1 text-xs py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-medium transition">Edit</button>
+                    <button onClick={() => openDelete(s)}
+                      className="flex-1 text-xs py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
       {/* Create / Edit Modal */}
       {(modal === 'create' || modal === 'edit') && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-5">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">
               {modal === 'create' ? '➕ Add New Student' : '✏️ Edit Student'}
             </h2>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>
-            )}
-
-            <form onSubmit={modal === 'create' ? handleCreate : handleEdit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="Abebe Kebede"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Student ID *</label>
-                <input
-                  required
-                  value={form.studentId}
-                  onChange={(e) => setForm({ ...form, studentId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="UGR/12345/15"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                <input
-                  required
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="student@university.edu"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <input
-                  value={form.department}
-                  onChange={(e) => setForm({ ...form, department: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="Computer Science"
-                />
-              </div>
+            {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
+            <form onSubmit={modal === 'create' ? handleCreate : handleEdit} className="space-y-3 sm:space-y-4">
+              {[
+                { key: 'name', label: 'Full Name *', required: true, type: 'text', placeholder: 'Abebe Kebede' },
+                { key: 'studentId', label: 'Student ID *', required: true, type: 'text', placeholder: 'UGR/12345/15' },
+                { key: 'email', label: 'Email *', required: true, type: 'email', placeholder: 'student@university.edu' },
+                { key: 'department', label: 'Department', required: false, type: 'text', placeholder: 'Computer Science' },
+              ].map(({ key, label, required, type, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                  <input required={required} type={type} value={form[key]}
+                    onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    placeholder={placeholder} />
+                </div>
+              ))}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password {modal === 'edit' && <span className="text-gray-400 font-normal">(leave blank to keep current)</span>}
-                  {modal === 'create' && ' *'}
+                  Password {modal === 'edit' ? <span className="text-gray-400 font-normal text-xs">(blank = keep current)</span> : '*'}
                 </label>
-                <input
-                  required={modal === 'create'}
-                  type="password"
-                  value={form.password}
+                <input required={modal === 'create'} type="password" value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="••••••••"
-                />
+                  placeholder="••••••••" />
               </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2 rounded-lg transition font-semibold text-sm"
-                >
-                  {saving ? 'Saving...' : modal === 'create' ? 'Create Student' : 'Save Changes'}
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={closeModal}
+                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
+                <button type="submit" disabled={saving}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
+                  {saving ? 'Saving...' : modal === 'create' ? 'Create' : 'Save'}
                 </button>
               </div>
             </form>
@@ -289,28 +208,19 @@ export default function AdminStudents() {
         </div>
       )}
 
-      {/* Delete Confirm Modal */}
+      {/* Delete Modal */}
       {modal === 'delete' && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
             <div className="text-5xl mb-4">🗑️</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">Delete Student?</h2>
-            <p className="text-gray-500 text-sm mb-1">
-              You are about to delete <strong>{selected?.name}</strong>.
-            </p>
-            <p className="text-red-500 text-xs mb-6">This action cannot be undone.</p>
+            <p className="text-gray-500 text-sm mb-1">Delete <strong>{selected?.name}</strong>?</p>
+            <p className="text-red-500 text-xs mb-5">This cannot be undone.</p>
             <div className="flex gap-3">
-              <button
-                onClick={closeModal}
-                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={saving}
-                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white py-2 rounded-lg transition font-semibold"
-              >
+              <button onClick={closeModal}
+                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
+              <button onClick={handleDelete} disabled={saving}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
                 {saving ? 'Deleting...' : 'Delete'}
               </button>
             </div>
