@@ -1,0 +1,29 @@
+import axios from 'axios';
+
+// In dev, Vite proxies /api → http://localhost:5000
+// Set VITE_API_URL in .env to override (e.g. for production)
+const baseURL = import.meta.env.VITE_API_URL || '/api';
+
+const api = axios.create({ baseURL });
+
+// Attach token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// Handle 401 globally
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(err);
+  }
+);
+
+export default api;
