@@ -6,7 +6,7 @@ import { protect } from '../middleware/auth.js';
 const router = express.Router();
 
 const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
 // POST /api/auth/register — DISABLED: only admin can create students
 router.post('/register', (req, res) => {
