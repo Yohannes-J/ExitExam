@@ -26,7 +26,23 @@ export default function ExamPage() {
   }, [id]);
 
   const handleSelect = (qIndex, optIndex) => {
-    setAnswers((prev) => ({ ...prev, [qIndex]: optIndex }));
+    setAnswers((prev) => {
+      // clicking the already-selected option deselects it
+      if (prev[qIndex] === optIndex) {
+        const next = { ...prev };
+        delete next[qIndex];
+        return next;
+      }
+      return { ...prev, [qIndex]: optIndex };
+    });
+  };
+
+  const handleClear = (qIndex) => {
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[qIndex];
+      return next;
+    });
   };
 
   const handleSubmit = useCallback(async (forced = false) => {
@@ -152,11 +168,21 @@ export default function ExamPage() {
         {/* Question panel */}
         <div className="flex-1 min-w-0">
           <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-4">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-bold px-3 py-1 rounded-full">
-                Q{currentQ + 1} / {totalQ}
-              </span>
-              <span className="text-xs text-gray-400">{question.points} pt{question.points !== 1 ? 's' : ''}</span>
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-bold px-3 py-1 rounded-full">
+                  Q{currentQ + 1} / {totalQ}
+                </span>
+                <span className="text-xs text-gray-400">{question.points} pt{question.points !== 1 ? 's' : ''}</span>
+              </div>
+              {answers[currentQ] !== undefined && (
+                <button
+                  onClick={() => handleClear(currentQ)}
+                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded-lg hover:bg-red-50"
+                >
+                  <span>✕</span> Clear answer
+                </button>
+              )}
             </div>
             <p className="text-gray-800 text-base sm:text-lg font-medium leading-relaxed mb-5 sm:mb-6">
               {question.text}

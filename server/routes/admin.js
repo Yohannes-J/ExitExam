@@ -163,4 +163,15 @@ router.delete('/students/:id', async (req, res) => {
   }
 });
 
+// DELETE /api/admin/results/:id
+router.delete('/results/:id', async (req, res) => {
+  try {
+    const result = await Result.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ message: 'Result not found' });
+    res.json({ message: 'Result deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 export default router;
