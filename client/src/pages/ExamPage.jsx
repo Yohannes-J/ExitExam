@@ -250,13 +250,6 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Resume banner */}
-      {resuming && (
-        <div className="bg-blue-600 text-white text-center text-sm py-2 px-4">
-          ✅ Session restored — continuing from Question {currentQ + 1} with {Math.floor((savedTimeLeft ?? 0) / 60)}m {(savedTimeLeft ?? 0) % 60}s remaining
-        </div>
-      )}
-
       {/* Sticky top bar */}
       <div className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-4">
