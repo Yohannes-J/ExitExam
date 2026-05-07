@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function CountdownTimer({ durationSeconds, onTimeUp, onTick }) {
-  const [timeLeft, setTimeLeft] = useState(durationSeconds);
+export default function CountdownTimer({ durationSeconds, initialSeconds, onTimeUp, onTick }) {
+  // initialSeconds = resume from saved time, fallback to full duration
+  const [timeLeft, setTimeLeft] = useState(initialSeconds ?? durationSeconds);
 
   const formatTime = (secs) => {
     const h = Math.floor(secs / 3600);
@@ -12,10 +13,7 @@ export default function CountdownTimer({ durationSeconds, onTimeUp, onTick }) {
   };
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      onTimeUp?.();
-      return;
-    }
+    if (timeLeft <= 0) { onTimeUp?.(); return; }
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         const next = prev - 1;
@@ -43,7 +41,6 @@ export default function CountdownTimer({ durationSeconds, onTimeUp, onTick }) {
       }`}>
         {formatTime(timeLeft)}
       </span>
-      {/* Progress bar */}
       <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
         <div
           className={`h-full rounded-full transition-all duration-1000 ${
