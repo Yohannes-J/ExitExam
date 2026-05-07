@@ -20,7 +20,7 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token, data.user);
-      navigate(data.user.role === 'admin' ? '/admin' : '/dashboard');
+      navigate(['admin', 'teacher'].includes(data.user.role) ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

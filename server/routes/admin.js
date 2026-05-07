@@ -42,7 +42,10 @@ router.put('/exams/:id', async (req, res) => {
     if (isTeacher(req.user) && exam.department !== req.user.department && exam.department !== 'All') {
       return res.status(403).json({ message: 'Access denied to this exam' });
     }
-    const updated = await Exam.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updateData = { ...req.body };
+    // Always force teacher's department — never let it be overridden
+    if (isTeacher(req.user)) updateData.department = req.user.department;
+    const updated = await Exam.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
