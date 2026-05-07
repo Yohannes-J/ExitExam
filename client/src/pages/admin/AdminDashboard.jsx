@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ exams: 0, results: 0, students: 0 });
+  const [stats, setStats] = useState({ exams: 0, results: 0, students: 0, admins: 0 });
   const [recentResults, setRecentResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,8 +14,10 @@ export default function AdminDashboard() {
       api.get('/admin/exams'),
       api.get('/admin/results'),
       api.get('/admin/students'),
-    ]).then(([exams, results, students]) => {
-      setStats({ exams: exams.data.length, results: results.data.length, students: students.data.length });
+    ]).then(([exams, results, users]) => {
+      const students = users.data.filter(u => u.role === 'student').length;
+      const admins = users.data.filter(u => u.role === 'admin').length;
+      setStats({ exams: exams.data.length, results: results.data.length, students, admins });
       setRecentResults(results.data.slice(0, 5));
     }).finally(() => setLoading(false));
   }, []);
@@ -34,11 +36,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {[
             { label: 'Exams', value: stats.exams, icon: '📋', color: 'indigo', link: '/admin/exams' },
             { label: 'Submissions', value: stats.results, icon: '📊', color: 'green', link: '/admin/results' },
-            { label: 'Students', value: stats.students, icon: '👥', color: 'purple', link: '/admin/students' },
+            { label: 'Students', value: stats.students, icon: '🎓', color: 'blue', link: '/admin/students' },
+            { label: 'Admins', value: stats.admins, icon: '👑', color: 'purple', link: '/admin/students' },
           ].map(({ label, value, icon, color, link }) => (
             <Link key={label} to={link}
               className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition p-3 sm:p-5">
