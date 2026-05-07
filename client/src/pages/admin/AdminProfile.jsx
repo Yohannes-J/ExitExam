@@ -54,7 +54,7 @@ export default function AdminProfile() {
               <span className="font-medium">{user?.email}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 w-24 shrink-0">Student ID</span>
+              <span className="text-gray-400 w-24 shrink-0">Admin ID</span>
               <span className="font-medium font-mono">{user?.studentId}</span>
             </div>
             <div className="flex items-center gap-2">
