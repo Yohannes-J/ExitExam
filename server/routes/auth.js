@@ -16,10 +16,16 @@ router.post('/register', (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { studentId, password } = req.body;
+    if (!studentId || !password) {
+      return res.status(400).json({ message: 'Student ID and password are required' });
+    }
+    // Find by studentId OR email (admin uses email)
+    const user = await User.findOne({
+      $or: [{ studentId }, { email: studentId }],
+    });
     if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid ID or password' });
     }
     const token = signToken(user._id);
     res.json({

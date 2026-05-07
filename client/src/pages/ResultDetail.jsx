@@ -83,6 +83,11 @@ export default function ResultDetail() {
                     </span>
                     <p className="font-medium text-gray-800 text-sm sm:text-base">{q.text}</p>
                   </div>
+                  {q.code && (
+                    <pre className="bg-gray-900 text-green-400 rounded-lg p-3 mb-3 text-xs font-mono overflow-x-auto whitespace-pre ml-8">
+                      {q.code}
+                    </pre>
+                  )}
                   <div className="space-y-1.5 ml-8">
                     {q.options.map((opt, j) => (
                       <div key={j} className={`text-xs sm:text-sm px-2 sm:px-3 py-1.5 rounded-lg ${

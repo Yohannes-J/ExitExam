@@ -161,6 +161,12 @@ export default function ExamPage() {
             <p className="text-gray-800 text-base sm:text-lg font-medium leading-relaxed mb-5 sm:mb-6">
               {question.text}
             </p>
+            {/* Code block */}
+            {question.code && (
+              <pre className="bg-gray-900 text-green-400 rounded-xl p-4 mb-5 text-xs sm:text-sm font-mono overflow-x-auto whitespace-pre leading-relaxed border border-gray-700">
+                {question.code}
+              </pre>
+            )}
             <div className="space-y-2 sm:space-y-3">
               {question.options.map((opt, i) => (
                 <button key={i} onClick={() => handleSelect(currentQ, i)}

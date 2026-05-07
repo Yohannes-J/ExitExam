@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
 
-const emptyQuestion = () => ({ text: '', options: ['', '', '', ''], correctIndex: 0, points: 1 });
+const emptyQuestion = () => ({ text: '', code: '', options: ['', '', '', ''], correctIndex: 0, points: 1 });
 
 export default function ExamForm() {
   const { id } = useParams();
@@ -163,9 +163,28 @@ export default function ExamForm() {
                   value={q.text}
                   onChange={(e) => updateQuestion(qi, 'text', e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3"
                   placeholder="Enter question text..."
                 />
+
+                {/* Optional code block */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-gray-500">Code Snippet (optional)</label>
+                    {q.code && (
+                      <button type="button" onClick={() => updateQuestion(qi, 'code', '')}
+                        className="text-xs text-red-400 hover:text-red-600">Clear code</button>
+                    )}
+                  </div>
+                  <textarea
+                    value={q.code || ''}
+                    onChange={(e) => updateQuestion(qi, 'code', e.target.value)}
+                    rows={5}
+                    spellCheck={false}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-gray-900 text-green-400 placeholder-gray-600 resize-y"
+                    placeholder={"// Paste code here (optional)\nfunction example() {\n  return 'Hello';\n}"}
+                  />
+                </div>
 
                 <div className="space-y-2">
                   {q.options.map((opt, oi) => (

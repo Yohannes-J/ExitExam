@@ -17,13 +17,15 @@ export default function Navbar() {
     ? [
         { to: '/admin', label: 'Dashboard' },
         { to: '/admin/exams', label: 'Exams' },
-        { to: '/admin/students', label: 'Students' },
+        { to: '/admin/students', label: 'Users' },
         { to: '/admin/results', label: 'Results' },
-        { to: '/admin/profile', label: 'My Profile' },
+        { to: '/admin/reports', label: 'Reports' },
+        { to: '/admin/profile', label: 'Profile' },
       ]
     : [
         { to: '/dashboard', label: 'Dashboard' },
         { to: '/results', label: 'My Results' },
+        { to: '/profile', label: 'Profile' },
       ];
 
   return (

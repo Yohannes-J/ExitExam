@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
   text: { type: String, required: true },
+  code: { type: String, default: '' },
   options: [{ type: String, required: true }],
-  correctIndex: { type: Number, required: true }, // index of correct option
+  correctIndex: { type: Number, required: true },
   points: { type: Number, default: 1 },
 });
 
