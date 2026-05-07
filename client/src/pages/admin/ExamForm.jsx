@@ -16,6 +16,18 @@ export default function ExamForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [departments, setDepartments] = useState([]);
+
+  // Common departments list + fetch from existing students
+  const DEFAULT_DEPTS = ['All', 'Computer Science', 'Information Technology', 'Software Engineering', 'Electrical Engineering', 'Civil Engineering', 'Mechanical Engineering', 'Business Administration', 'Accounting', 'Law', 'Medicine', 'Nursing', 'Natural Science', 'Social Science'];
+
+  useEffect(() => {
+    api.get('/admin/students').then((res) => {
+      const depts = [...new Set(res.data.map(u => u.department).filter(Boolean))];
+      const merged = [...new Set([...DEFAULT_DEPTS, ...depts])];
+      setDepartments(merged);
+    }).catch(() => setDepartments(DEFAULT_DEPTS));
+  }, []);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -111,9 +123,13 @@ export default function ExamForm() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <input value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="All" />
+                <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                  {departments.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">Select "All" to show to every student</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes) *</label>
