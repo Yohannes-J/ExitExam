@@ -99,6 +99,47 @@ export default function AdminStudents() {
     finally { setSaving(false); }
   };
 
+  const openEdit = (u) => {
+    setSelected(u);
+    setError("");
+    if (u.role === "student") {
+      setStudentForm({ name: u.name, studentId: u.studentId, department: u.department || "", password: "" });
+      setModal("editStudent");
+    } else {
+      setAdminForm({ name: u.name, email: u.email || "", department: u.department || "", role: u.role });
+      setModal("editAdmin");
+    }
+  };
+
+  const handleEditStudent = async (e) => {
+    e.preventDefault(); setError(""); setSaving(true);
+    try {
+      await api.put("/admin/students/" + selected._id, {
+        name: studentForm.name,
+        studentId: studentForm.studentId,
+        department: studentForm.department,
+      });
+      showSuccess("Student updated successfully");
+      closeModal(); load();
+    } catch (err) { setError(err.response?.data?.message || "Failed to update student"); }
+    finally { setSaving(false); }
+  };
+
+  const handleEditAdmin = async (e) => {
+    e.preventDefault(); setError(""); setSaving(true);
+    try {
+      await api.put("/admin/students/" + selected._id, {
+        name: adminForm.name,
+        email: adminForm.email,
+        department: adminForm.department,
+        role: adminForm.role,
+      });
+      showSuccess("Profile updated successfully");
+      closeModal(); load();
+    } catch (err) { setError(err.response?.data?.message || "Failed to update profile"); }
+    finally { setSaving(false); }
+  };
+
   const formatDate = (d) => new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
   return (
@@ -189,8 +230,10 @@ export default function AdminStudents() {
                       <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1.5">
+                          <button onClick={() => openEdit(u)}
+                            className="text-xs px-2.5 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-medium transition">Edit</button>
                           <button onClick={() => { setSelected(u); setResetPwd({ password: "", confirm: "" }); setError(""); setModal("reset"); }}
-                            className="text-xs px-2.5 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg font-medium transition">�� Reset</button>
+                            className="text-xs px-2.5 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg font-medium transition">🔑 Reset</button>
                           <button onClick={() => { setSelected(u); setError(""); setModal("delete"); }}
                             className="text-xs px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition">Delete</button>
                         </div>
@@ -217,9 +260,11 @@ export default function AdminStudents() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mb-3">🏛 {u.department || "—"} · 📅 {formatDate(u.createdAt)}</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
+                    <button onClick={() => openEdit(u)}
+                      className="text-xs py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-medium transition">Edit</button>
                     <button onClick={() => { setSelected(u); setResetPwd({ password: "", confirm: "" }); setError(""); setModal("reset"); }}
-                      className="text-xs py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg font-medium transition">🔑 Reset Pwd</button>
+                      className="text-xs py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg font-medium transition">🔑 Reset</button>
                     <button onClick={() => { setSelected(u); setError(""); setModal("delete"); }}
                       className="text-xs py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition">Delete</button>
                   </div>
@@ -372,6 +417,98 @@ export default function AdminStudents() {
               <button onClick={handleDelete} disabled={saving} className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
                 {saving ? "Deleting..." : "Delete"}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Student Modal ── */}
+      {modal === "editStudent" && (
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl">✏️</div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">Edit Student</h2>
+                <p className="text-xs text-gray-500">{selected?.name}</p>
+              </div>
+            </div>
+            {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">⚠️ {error}</div>}
+            <form onSubmit={handleEditStudent} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                <input required value={studentForm.name} onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student ID *</label>
+                <input required value={studentForm.studentId} onChange={(e) => setStudentForm({ ...studentForm, studentId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <input value={studentForm.department} onChange={(e) => setStudentForm({ ...studentForm, department: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Computer Science" />
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={closeModal} className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
+                <button type="submit" disabled={saving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Admin/Teacher Modal ── */}
+      {modal === "editAdmin" && (
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xl">✏️</div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">Edit {selected?.role === "admin" ? "Admin" : "Teacher"}</h2>
+                <p className="text-xs text-gray-500">{selected?.name}</p>
+              </div>
+            </div>
+            {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">⚠️ {error}</div>}
+            <form onSubmit={handleEditAdmin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                <input required value={adminForm.name} onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input required type="email" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <input value={adminForm.department} onChange={(e) => setAdminForm({ ...adminForm, department: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Computer Science" />
+              </div>
+              {isSuperAdmin && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[{ value: "teacher", label: "🏫 Teacher", desc: "Dept only" }, { value: "admin", label: "👑 Admin", desc: "Full access" }].map(r => (
+                      <button key={r.value} type="button" onClick={() => setAdminForm({ ...adminForm, role: r.value })}
+                        className={"py-2.5 px-3 rounded-lg border-2 text-sm font-semibold transition text-left " + (adminForm.role === r.value ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500 hover:border-gray-300")}>
+                        <div>{r.label}</div>
+                        <div className="text-xs font-normal opacity-70">{r.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={closeModal} className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
+                <button type="submit" disabled={saving} className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
