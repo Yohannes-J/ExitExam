@@ -5,13 +5,24 @@ import CountdownTimer from '../components/CountdownTimer';
 
 // localStorage key for a specific exam session
 const sessionKey = (examId) => `exam_session_${examId}`;
+const SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
 
 const saveSession = (examId, data) => {
-  try { localStorage.setItem(sessionKey(examId), JSON.stringify(data)); } catch {}
+  try { localStorage.setItem(sessionKey(examId), JSON.stringify({ ...data, savedAt: Date.now() })); } catch {}
 };
 
 const loadSession = (examId) => {
-  try { return JSON.parse(localStorage.getItem(sessionKey(examId))); } catch { return null; }
+  try {
+    const raw = localStorage.getItem(sessionKey(examId));
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Expire after 24 hours
+    if (Date.now() - (data.savedAt || 0) > SESSION_TTL) {
+      localStorage.removeItem(sessionKey(examId));
+      return null;
+    }
+    return data;
+  } catch { return null; }
 };
 
 const clearSession = (examId) => {
