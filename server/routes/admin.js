@@ -83,7 +83,7 @@ router.post('/students', async (req, res) => {
     const exists = await User.findOne({ studentId });
     if (exists) return res.status(409).json({ message: 'Student ID already exists' });
     const user = await User.create({
-      name, studentId, department, password, role: 'student', email: null,
+      name, studentId, department, password, role: 'student',
     });
     res.status(201).json({
       id: user._id, name: user.name, studentId: user.studentId,
