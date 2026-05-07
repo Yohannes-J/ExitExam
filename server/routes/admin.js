@@ -122,37 +122,4 @@ router.delete('/students/:id', async (req, res) => {
   }
 });
 
-// POST /api/admin/seed — seed sample exam
-router.post('/seed', async (req, res) => {
-  try {
-    const existing = await Exam.findOne({ title: 'Sample Exit Exam' });
-    if (existing) return res.json({ message: 'Sample exam already exists', exam: existing });
-
-    const exam = await Exam.create({
-      title: 'Sample Exit Exam',
-      description: 'A sample exit exam to test the platform.',
-      subject: 'General Knowledge',
-      department: 'All',
-      duration: 30,
-      passingScore: 60,
-      createdBy: req.user._id,
-      questions: [
-        { text: 'What is the capital of Ethiopia?', options: ['Nairobi', 'Addis Ababa', 'Cairo', 'Lagos'], correctIndex: 1, points: 1 },
-        { text: 'Which data structure uses LIFO?', options: ['Queue', 'Stack', 'Tree', 'Graph'], correctIndex: 1, points: 1 },
-        { text: 'What does HTTP stand for?', options: ['HyperText Transfer Protocol', 'High Transfer Text Protocol', 'Hyper Transfer Text Process', 'None'], correctIndex: 0, points: 1 },
-        { text: 'Which language is used for styling web pages?', options: ['HTML', 'JavaScript', 'CSS', 'Python'], correctIndex: 2, points: 1 },
-        { text: 'What is 2^10?', options: ['512', '1024', '2048', '256'], correctIndex: 1, points: 1 },
-        { text: 'Which of these is a NoSQL database?', options: ['MySQL', 'PostgreSQL', 'MongoDB', 'SQLite'], correctIndex: 2, points: 1 },
-        { text: 'What does CPU stand for?', options: ['Central Processing Unit', 'Computer Personal Unit', 'Central Program Utility', 'Core Processing Unit'], correctIndex: 0, points: 1 },
-        { text: 'Which sorting algorithm has O(n log n) average complexity?', options: ['Bubble Sort', 'Insertion Sort', 'Merge Sort', 'Selection Sort'], correctIndex: 2, points: 1 },
-        { text: 'What is the default port for HTTPS?', options: ['80', '8080', '443', '3000'], correctIndex: 2, points: 1 },
-        { text: 'Which keyword declares a constant in JavaScript?', options: ['var', 'let', 'const', 'def'], correctIndex: 2, points: 1 },
-      ],
-    });
-    res.status(201).json({ message: 'Sample exam created', exam });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 export default router;

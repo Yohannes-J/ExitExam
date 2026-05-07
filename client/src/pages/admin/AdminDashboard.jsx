@@ -8,8 +8,6 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ exams: 0, results: 0, students: 0 });
   const [recentResults, setRecentResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [seedMsg, setSeedMsg] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -22,13 +20,6 @@ export default function AdminDashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const handleSeed = async () => {
-    setSeeding(true); setSeedMsg('');
-    try { const { data } = await api.post('/admin/seed'); setSeedMsg(data.message); }
-    catch (err) { setSeedMsg(err.response?.data?.message || 'Seed failed'); }
-    finally { setSeeding(false); }
-  };
-
   const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
@@ -40,15 +31,7 @@ export default function AdminDashboard() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Admin Dashboard</h1>
             <p className="text-gray-500 text-sm">Welcome, {user?.name}</p>
           </div>
-          <button onClick={handleSeed} disabled={seeding}
-            className="self-start sm:self-auto bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-            {seeding ? 'Seeding...' : '🌱 Seed Sample Exam'}
-          </button>
         </div>
-
-        {seedMsg && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">{seedMsg}</div>
-        )}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
