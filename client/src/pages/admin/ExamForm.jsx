@@ -183,23 +183,40 @@ export default function ExamForm() {
                   placeholder="Enter question text..."
                 />
 
-                {/* Optional code block */}
+                {/* Optional code block — collapsed by default */}
                 <div className="mb-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-gray-500">Code Snippet (optional)</label>
-                    {q.code && (
-                      <button type="button" onClick={() => updateQuestion(qi, 'code', '')}
-                        className="text-xs text-red-400 hover:text-red-600">Clear code</button>
-                    )}
-                  </div>
-                  <textarea
-                    value={q.code || ''}
-                    onChange={(e) => updateQuestion(qi, 'code', e.target.value)}
-                    rows={5}
-                    spellCheck={false}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm bg-gray-900 text-green-400 placeholder-gray-600 resize-y"
-                    placeholder={"// Paste code here (optional)\nfunction example() {\n  return 'Hello';\n}"}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => updateQuestion(qi, '_showCode', !q._showCode)}
+                    className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg transition ${
+                      q._showCode || q.code
+                        ? 'bg-gray-800 text-green-400'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    <span>{q._showCode || q.code ? '💻' : '+ 💻'}</span>
+                    {q._showCode || q.code ? 'Hide Code Snippet' : 'Add Code Snippet'}
+                  </button>
+
+                  {(q._showCode || q.code) && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-400">Code editor</span>
+                        {q.code && (
+                          <button type="button" onClick={() => { updateQuestion(qi, 'code', ''); updateQuestion(qi, '_showCode', false); }}
+                            className="text-xs text-red-400 hover:text-red-600">Clear & hide</button>
+                        )}
+                      </div>
+                      <textarea
+                        value={q.code || ''}
+                        onChange={(e) => updateQuestion(qi, 'code', e.target.value)}
+                        rows={5}
+                        spellCheck={false}
+                        className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm bg-gray-900 text-green-400 placeholder-gray-600 resize-y"
+                        placeholder={"// Paste your code here\nfunction example() {\n  return 'Hello';\n}"}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
