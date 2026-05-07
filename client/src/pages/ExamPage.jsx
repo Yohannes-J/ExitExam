@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import CountdownTimer from '../components/CountdownTimer';
+import { seededShuffle } from '../utils/shuffle';
+import { useAuth } from '../context/AuthContext';
 
 // localStorage key for a specific exam session
 const sessionKey = (examId) => `exam_session_${examId}`;
@@ -32,7 +34,9 @@ const clearSession = (examId) => {
 export default function ExamPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [exam, setExam] = useState(null);
+  const [questionOrder, setQuestionOrder] = useState([]); // shuffled indices into exam.questions
   const [answers, setAnswers] = useState({});
   const [currentQ, setCurrentQ] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -51,35 +55,38 @@ export default function ExamPage() {
   useEffect(() => {
     api.get(`/exams/${id}`)
       .then((res) => {
-        setExam(res.data);
-        const fullDuration = res.data.duration * 60;
+        const examData = res.data;
+        setExam(examData);
+        const fullDuration = examData.duration * 60;
         timeLeftRef.current = fullDuration;
+
+        // Build question order (shuffled per student if enabled)
+        const indices = examData.questions.map((_, i) => i);
+        const order = examData.shuffleQuestions && user?.id
+          ? seededShuffle(indices, user.id + id) // seed = userId + examId for uniqueness
+          : indices;
+        setQuestionOrder(order);
 
         // Check for saved session
         const saved = loadSession(id);
         if (saved && saved.started) {
-          // Calculate how much time has elapsed since the page was closed
-          const elapsed = saved.pausedAt
-            ? 0  // was paused — don't count offline time
-            : Math.floor((Date.now() - saved.lastSaved) / 1000);
+          const elapsed = saved.pausedAt ? 0 : Math.floor((Date.now() - saved.lastSaved) / 1000);
           const remaining = Math.max(0, (saved.timeLeft ?? fullDuration) - elapsed);
-
           if (remaining > 0) {
             setAnswers(saved.answers || {});
             setCurrentQ(saved.currentQ || 0);
             setSavedTimeLeft(remaining);
             timeLeftRef.current = remaining;
             setResuming(true);
-            setStarted(true); // auto-resume into exam
+            setStarted(true);
           } else {
-            // Time ran out while offline — auto-submit
             clearSession(id);
           }
         }
       })
       .catch((err) => setError(err.response?.data?.message || 'Failed to load exam'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
   // Save session to localStorage whenever answers, currentQ, or timeLeft changes
   const persistSession = useCallback((updatedAnswers, updatedQ, timeLeft) => {
@@ -196,6 +203,8 @@ export default function ExamPage() {
 
   const answeredCount = Object.keys(answers).length;
   const totalQ = exam?.questions?.length || 0;
+  // The actual question to show at position currentQ in the shuffled order
+  const realQIndex = questionOrder[currentQ] ?? currentQ;
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -257,7 +266,7 @@ export default function ExamPage() {
     </div>
   );
 
-  const question = exam.questions[currentQ];
+  const question = exam.questions[realQIndex];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -300,8 +309,8 @@ export default function ExamPage() {
                 </span>
                 <span className="text-xs text-gray-400">{question.points} pt{question.points !== 1 ? 's' : ''}</span>
               </div>
-              {answers[currentQ] !== undefined && (
-                <button onClick={() => handleClear(currentQ)}
+              {answers[realQIndex] !== undefined && (
+                <button onClick={() => handleClear(realQIndex)}
                   className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition px-2 py-1 rounded-lg hover:bg-red-50">
                   <span>✕</span> Clear answer
                 </button>
@@ -317,14 +326,14 @@ export default function ExamPage() {
             )}
             <div className="space-y-2 sm:space-y-3">
               {question.options.map((opt, i) => (
-                <button key={i} onClick={() => handleSelect(currentQ, i)}
+                <button key={i} onClick={() => handleSelect(realQIndex, i)}
                   className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition font-medium text-sm sm:text-base ${
-                    answers[currentQ] === i
+                    answers[realQIndex] === i
                       ? 'border-indigo-500 bg-indigo-50 text-indigo-800'
                       : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 text-gray-700'
                   }`}>
                   <span className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full text-xs sm:text-sm font-bold mr-2 sm:mr-3 shrink-0 ${
-                    answers[currentQ] === i ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600'
+                    answers[realQIndex] === i ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {String.fromCharCode(65 + i)}
                   </span>
@@ -363,16 +372,19 @@ export default function ExamPage() {
               <button onClick={() => setShowSidebar(false)} className="lg:hidden text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
             </div>
             <div className="grid grid-cols-5 gap-1.5">
-              {exam.questions.map((_, i) => (
-                <button key={i} onClick={() => { setCurrentQ(i); setShowSidebar(false); persistSession(answers, i, timeLeftRef.current); }}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                    i === currentQ ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
-                    : answers[i] !== undefined ? 'bg-green-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}>
-                  {i + 1}
-                </button>
-              ))}
+              {exam.questions.map((_, i) => {
+                const realIdx = questionOrder[i] ?? i;
+                return (
+                  <button key={i} onClick={() => { setCurrentQ(i); setShowSidebar(false); persistSession(answers, i, timeLeftRef.current); }}
+                    className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                      i === currentQ ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
+                      : answers[realIdx] !== undefined ? 'bg-green-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}>
+                    {i + 1}
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-3 space-y-1.5 text-xs text-gray-500">
               <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-green-500 inline-block"></span> Answered</div>
@@ -388,7 +400,7 @@ export default function ExamPage() {
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-sm text-center">
             <div className="text-5xl mb-4">📤</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Submit Exam?</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Submit Exam?</h2> 
             <p className="text-gray-500 text-sm mb-2">
               You answered <strong>{answeredCount}</strong> of <strong>{totalQ}</strong> questions.
             </p>

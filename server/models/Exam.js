@@ -18,6 +18,7 @@ const examSchema = new mongoose.Schema(
     passingScore: { type: Number, default: 50 }, // percentage
     questions: [questionSchema],
     isActive: { type: Boolean, default: true },
+    shuffleQuestions: { type: Boolean, default: false },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }

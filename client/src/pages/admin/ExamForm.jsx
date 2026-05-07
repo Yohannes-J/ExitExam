@@ -181,6 +181,14 @@ export default function ExamForm() {
                   className="w-4 h-4 text-indigo-600 rounded" />
                 <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Active (visible to students)</label>
               </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="shuffleQuestions" checked={form.shuffleQuestions || false} onChange={(e) => setForm({ ...form, shuffleQuestions: e.target.checked })}
+                  className="w-4 h-4 text-indigo-600 rounded" />
+                <div>
+                  <label htmlFor="shuffleQuestions" className="text-sm font-medium text-gray-700">Shuffle question order</label>
+                  <p className="text-xs text-gray-400">Each student gets a different question order</p>
+                </div>
+              </div>
             </div>
           </div>
 
