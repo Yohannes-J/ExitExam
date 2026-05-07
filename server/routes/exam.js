@@ -5,10 +5,20 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/exams — list active exams for student
+// GET /api/exams — list active exams for student (filtered by their department)
 router.get('/', protect, async (req, res) => {
   try {
-    const exams = await Exam.find({ isActive: true }).select('-questions.correctIndex');
+    const studentDept = req.user.department || '';
+    // Show exams that are for 'All' departments OR match the student's department
+    const exams = await Exam.find({
+      isActive: true,
+      $or: [
+        { department: 'All' },
+        { department: studentDept },
+        { department: '' },
+      ],
+    }).select('-questions.correctIndex');
+
     // Mark which exams the student already submitted
     const results = await Result.find({ student: req.user._id }).select('exam');
     const submittedIds = results.map((r) => r.exam.toString());
@@ -27,6 +37,12 @@ router.get('/:id', protect, async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id).select('-questions.correctIndex');
     if (!exam || !exam.isActive) return res.status(404).json({ message: 'Exam not found' });
+
+    // Check department access
+    const studentDept = req.user.department || '';
+    if (exam.department !== 'All' && exam.department !== '' && exam.department !== studentDept) {
+      return res.status(403).json({ message: 'This exam is not available for your department' });
+    }
 
     // Check if already submitted
     const existing = await Result.findOne({ student: req.user._id, exam: exam._id });
