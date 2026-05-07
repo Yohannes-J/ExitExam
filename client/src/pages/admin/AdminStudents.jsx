@@ -1,14 +1,21 @@
 ﻿import { useState, useEffect } from "react";
 import api from "../../api/axios";
+import { useAuth } from "../../context/AuthContext";
+import Pagination from "../../components/Pagination";
 
 const emptyStudent = { name: "", studentId: "", department: "", password: "" };
-const emptyAdmin = { name: "", email: "", department: "", role: "admin" };
+const emptyAdmin = { name: "", email: "", department: "", role: "teacher" };
+
+const PAGE_SIZE = 10;
 
 export default function AdminStudents() {
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.role === 'admin';
   const [tab, setTab] = useState("students");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [studentForm, setStudentForm] = useState(emptyStudent);
@@ -27,7 +34,7 @@ export default function AdminStudents() {
   useEffect(() => { load(); }, []);
 
   const students = users.filter((u) => u.role === "student");
-  const admins = users.filter((u) => u.role === "admin");
+  const admins = users.filter((u) => u.role === "admin" || u.role === "teacher");
   const list = tab === "students" ? students : admins;
 
   const filtered = list.filter((u) =>
@@ -36,6 +43,12 @@ export default function AdminStudents() {
     u.email?.toLowerCase().includes(search.toLowerCase()) ||
     u.department?.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Reset to page 1 when tab or search changes
+  useEffect(() => { setPage(1); }, [tab, search]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const closeModal = () => { setModal(null); setSelected(null); setError(""); setNewAdminCreds(null); };
   const showSuccess = (msg) => { setSuccess(msg); setTimeout(() => setSuccess(""), 4000); };
@@ -101,10 +114,12 @@ export default function AdminStudents() {
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition">
               + Add Student
             </button>
-            <button onClick={() => { setAdminForm(emptyAdmin); setError(""); setModal("admin"); }}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition">
-              + Add Admin
-            </button>
+            {isSuperAdmin && (
+              <button onClick={() => { setAdminForm(emptyAdmin); setError(""); setModal("admin"); }}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition">
+                + Add Admin/Teacher
+              </button>
+            )}
           </div>
         </div>
 
@@ -151,7 +166,7 @@ export default function AdminStudents() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((u) => (
+                  {paginated.map((u) => (
                     <tr key={u._id} className="hover:bg-gray-50 transition">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -164,8 +179,8 @@ export default function AdminStudents() {
                       <td className="px-4 py-3 text-gray-600 font-mono text-xs">{tab === "students" ? u.studentId : u.email}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{u.department || "—"}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={"text-xs font-semibold px-2.5 py-1 rounded-full " + (u.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-indigo-100 text-indigo-700")}>
-                          {u.role === "admin" ? "👑 Admin" : "🎓 Student"}
+                        <span className={"text-xs font-semibold px-2.5 py-1 rounded-full " + (u.role === "admin" ? "bg-purple-100 text-purple-700" : u.role === "teacher" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700")}>
+                          {u.role === "admin" ? "👑 Admin" : u.role === "teacher" ? "🏫 Teacher" : "🎓 Student"}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
@@ -184,7 +199,7 @@ export default function AdminStudents() {
             </div>
 
             <div className="sm:hidden space-y-3">
-              {filtered.map((u) => (
+              {paginated.map((u) => (
                 <div key={u._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                   <div className="flex items-center gap-3 mb-2">
                     <div className={"w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0 " + (u.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-indigo-100 text-indigo-700")}>
@@ -194,8 +209,8 @@ export default function AdminStudents() {
                       <p className="font-bold text-gray-800 text-sm">{u.name}</p>
                       <p className="text-xs text-gray-400 font-mono truncate">{tab === "students" ? u.studentId : u.email}</p>
                     </div>
-                    <span className={"text-xs font-semibold px-2 py-0.5 rounded-full " + (u.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-indigo-100 text-indigo-700")}>
-                      {u.role === "admin" ? "👑" : "🎓"}
+                    <span className={"text-xs font-semibold px-2 py-0.5 rounded-full " + (u.role === "admin" ? "bg-purple-100 text-purple-700" : u.role === "teacher" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700")}>
+                      {u.role === "admin" ? "👑" : u.role === "teacher" ? "🏫" : "🎓"}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mb-3">🏛 {u.department || "—"} · 📅 {formatDate(u.createdAt)}</p>
@@ -209,6 +224,16 @@ export default function AdminStudents() {
               ))}
             </div>
           </>
+        )}
+
+        {/* Pagination */}
+        {filtered.length > PAGE_SIZE && (
+          <div>
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+            </p>
+            <Pagination page={page} totalPages={totalPages} onPage={setPage} />
+          </div>
         )}
       </div>
 
@@ -275,6 +300,18 @@ export default function AdminStudents() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                     <input value={adminForm.department} onChange={(e) => setAdminForm({ ...adminForm, department: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Computer Science" /></div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[{ value: "teacher", label: "🏫 Teacher", desc: "Dept only access" }, { value: "admin", label: "👑 Admin", desc: "Full access" }].map(r => (
+                        <button key={r.value} type="button" onClick={() => setAdminForm({ ...adminForm, role: r.value })}
+                          className={"py-2.5 px-3 rounded-lg border-2 text-sm font-semibold transition text-left " + (adminForm.role === r.value ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500 hover:border-gray-300")}>
+                          <div>{r.label}</div>
+                          <div className="text-xs font-normal opacity-70">{r.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800">
                     🔑 Default password <strong>admin123</strong> will be assigned. Share it with the teacher and ask them to change it.
                   </div>

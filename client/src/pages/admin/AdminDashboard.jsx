@@ -27,11 +27,19 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-            <p className="text-gray-500 text-sm">Welcome, {user?.name}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              {user?.role === 'teacher' ? 'Teacher Dashboard' : 'Admin Dashboard'}
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Welcome, {user?.name}
+              {user?.role === 'teacher' && user?.department && (
+                <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                  🏫 {user.department}
+                </span>
+              )}
+            </p>
           </div>
         </div>
 

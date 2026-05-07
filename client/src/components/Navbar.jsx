@@ -22,6 +22,15 @@ export default function Navbar() {
         { to: '/admin/reports', label: 'Reports' },
         { to: '/admin/profile', label: 'Profile' },
       ]
+    : user?.role === 'teacher'
+    ? [
+        { to: '/admin', label: 'Dashboard' },
+        { to: '/admin/exams', label: 'Exams' },
+        { to: '/admin/students', label: 'Students' },
+        { to: '/admin/results', label: 'Results' },
+        { to: '/admin/reports', label: 'Reports' },
+        { to: '/admin/profile', label: 'Profile' },
+      ]
     : [
         { to: '/dashboard', label: 'Dashboard' },
         { to: '/results', label: 'My Results' },
