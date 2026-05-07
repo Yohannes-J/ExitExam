@@ -59,60 +59,54 @@ export default function AdminReports() {
       "Full Name": r.student?.name || "",
       "Student ID": r.student?.studentId || "",
       "Department": r.student?.department || "",
-      "Exam": r.exam?.title || "",
-      "Subject": r.exam?.subject || "",
-      "Score (%)": r.percentage,
-      "Points": `${r.score}/${r.totalPoints}`,
-      "Status": r.passed ? "PASSED" : "FAILED",
-      "Time Taken": formatTime(r.timeTaken),
-      "Submitted": formatDate(r.submittedAt),
+      "Result (%)": r.percentage,
+      "Pass/Fail": r.passed ? "PASSED" : "FAILED",
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     ws["!cols"] = [
-      { wch: 4 }, { wch: 22 }, { wch: 16 }, { wch: 18 },
-      { wch: 24 }, { wch: 16 }, { wch: 10 }, { wch: 10 },
-      { wch: 10 }, { wch: 12 }, { wch: 14 },
+      { wch: 4 }, { wch: 24 }, { wch: 16 }, { wch: 20 }, { wch: 12 }, { wch: 10 },
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Results");
-    const label = checked.size > 0 ? `Selected_${checked.size}` : "All";
-    XLSX.writeFile(wb, `ExitExam_${label}_${Date.now()}.xlsx`);
+    XLSX.writeFile(wb, `ExitExam_Results_${Date.now()}.xlsx`);
   };
 
   const exportPDF = () => {
-    const doc = new jsPDF({ orientation: "landscape" });
+    const doc = new jsPDF({ orientation: "portrait" });
     doc.setFontSize(16);
     doc.setTextColor(67, 56, 202);
     doc.text("ExitExam Platform — Results Report", 14, 16);
     doc.setFontSize(9);
     doc.setTextColor(100);
     const examLabel = selectedExam === "all" ? "All Exams" : exams.find(e => e._id === selectedExam)?.title || "";
-    const selLabel = checked.size > 0 ? `${checked.size} selected` : `All (${exportRows.length})`;
-    doc.text(`Generated: ${new Date().toLocaleString()}   |   Exam: ${examLabel}   |   Records: ${selLabel}`, 14, 23);
+    doc.text(`Generated: ${new Date().toLocaleString()}   |   Exam: ${examLabel}`, 14, 23);
     const passCount = exportRows.filter(r => r.passed).length;
     const pr = exportRows.length ? Math.round((passCount / exportRows.length) * 100) : 0;
-    doc.text(`Passed: ${passCount}   Failed: ${exportRows.length - passCount}   Pass Rate: ${pr}%`, 14, 29);
+    doc.text(`Total: ${exportRows.length}   Passed: ${passCount}   Failed: ${exportRows.length - passCount}   Pass Rate: ${pr}%`, 14, 29);
     autoTable(doc, {
       startY: 34,
-      head: [["#", "Full Name", "Student ID", "Department", "Exam", "Score", "Points", "Status", "Time", "Date"]],
+      head: [["#", "Full Name", "Student ID", "Department", "Result (%)", "Pass/Fail"]],
       body: exportRows.map((r, i) => [
         i + 1,
         r.student?.name || "",
         r.student?.studentId || "",
         r.student?.department || "",
-        r.exam?.title || "",
         `${r.percentage}%`,
-        `${r.score}/${r.totalPoints}`,
         r.passed ? "PASSED" : "FAILED",
-        formatTime(r.timeTaken),
-        formatDate(r.submittedAt),
       ]),
-      styles: { fontSize: 8, cellPadding: 2 },
+      styles: { fontSize: 9, cellPadding: 3 },
       headStyles: { fillColor: [67, 56, 202], textColor: 255, fontStyle: "bold" },
       alternateRowStyles: { fillColor: [245, 247, 255] },
+      columnStyles: {
+        5: { fontStyle: "bold" },
+      },
+      didParseCell: (data) => {
+        if (data.column.index === 5 && data.section === "body") {
+          data.cell.styles.textColor = data.cell.text[0] === "PASSED" ? [22, 163, 74] : [220, 38, 38];
+        }
+      },
     });
-    const label = checked.size > 0 ? `Selected_${checked.size}` : "All";
-    doc.save(`ExitExam_${label}_${Date.now()}.pdf`);
+    doc.save(`ExitExam_Results_${Date.now()}.pdf`);
   };
 
   return (
@@ -138,11 +132,11 @@ export default function AdminReports() {
             )}
             <button onClick={exportExcel} disabled={loading || filtered.length === 0}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-              📊 {checked.size > 0 ? `Excel (${checked.size})` : "Export Excel"}
+              📊 Export Excel
             </button>
             <button onClick={exportPDF} disabled={loading || filtered.length === 0}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-              📄 {checked.size > 0 ? `PDF (${checked.size})` : "Export PDF"}
+              📄 Export PDF
             </button>
           </div>
         </div>
