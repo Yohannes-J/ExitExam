@@ -16,7 +16,13 @@ export default function ResultDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const formatTime = (secs) => `${Math.floor(secs / 60)}m ${secs % 60}s`;
+  const formatTime = (secs) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    return `${m}m ${s}s`;
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

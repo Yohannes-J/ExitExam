@@ -62,7 +62,7 @@ export default function AdminExams() {
                   </div>
                   <p className="text-sm text-indigo-600">{exam.subject} · {exam.department}</p>
                   <div className="flex flex-wrap gap-2 sm:gap-4 text-xs text-gray-400 mt-2">
-                    <span>⏱ {exam.duration} min</span>
+                    <span>⏱ {exam.duration >= 60 ? `${Math.floor(exam.duration/60)}h${exam.duration%60>0?' '+exam.duration%60+'m':''}` : `${exam.duration}m`}</span>
                     <span>❓ {exam.questions?.length} Qs</span>
                     <span>🎯 Pass: {exam.passingScore}%</span>
                     <span>📅 {new Date(exam.createdAt).toLocaleDateString()}</span>

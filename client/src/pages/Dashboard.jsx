@@ -80,7 +80,7 @@ export default function Dashboard() {
               )}
 
               <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 mb-4">
-                <span>⏱ {exam.duration} min</span>
+                <span>⏱ {Math.floor(exam.duration/60) > 0 ? `${Math.floor(exam.duration/60)}h ` : ''}{exam.duration%60 > 0 ? `${exam.duration%60}m` : ''}</span>
                 <span>❓ {exam.questions?.length || 0} Qs</span>
                 <span>🎯 Pass: {exam.passingScore}%</span>
               </div>

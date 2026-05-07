@@ -132,9 +132,44 @@ export default function ExamForm() {
                 <p className="text-xs text-gray-400 mt-1">Select "All" to show to every student</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes) *</label>
-                <input type="number" min={1} required value={form.duration} onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Duration *</label>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="number" min={0} max={23}
+                      value={Math.floor(form.duration / 60)}
+                      onChange={(e) => {
+                        const h = Math.max(0, Number(e.target.value));
+                        const m = form.duration % 60;
+                        setForm({ ...form, duration: h * 60 + m });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-gray-400 text-center mt-0.5">Hours</p>
+                  </div>
+                  <span className="text-gray-400 font-bold text-lg pb-4">:</span>
+                  <div className="flex-1">
+                    <input
+                      type="number" min={0} max={59}
+                      value={form.duration % 60}
+                      onChange={(e) => {
+                        const m = Math.min(59, Math.max(0, Number(e.target.value)));
+                        const h = Math.floor(form.duration / 60);
+                        setForm({ ...form, duration: h * 60 + m });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-gray-400 text-center mt-0.5">Minutes</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Total: {form.duration >= 60
+                    ? `${Math.floor(form.duration / 60)}h ${form.duration % 60 > 0 ? `${form.duration % 60}m` : ''}`
+                    : `${form.duration}m`}
+                  {form.duration === 0 && <span className="text-red-500 ml-1">Must be at least 1 minute</span>}
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Passing Score (%)</label>

@@ -229,7 +229,7 @@ export default function ExamPage() {
         {exam.description && <p className="text-gray-500 text-sm text-center mb-6">{exam.description}</p>}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
           {[
-            { label: 'Minutes', value: exam.duration, color: 'indigo' },
+            { label: 'Duration', value: exam.duration >= 60 ? `${Math.floor(exam.duration/60)}h${exam.duration%60>0?' '+exam.duration%60+'m':''}` : `${exam.duration}m`, color: 'indigo' },
             { label: 'Questions', value: totalQ, color: 'purple' },
             { label: 'Pass Score', value: `${exam.passingScore}%`, color: 'green' },
           ].map(({ label, value, color }) => (
