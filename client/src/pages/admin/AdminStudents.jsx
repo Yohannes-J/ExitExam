@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 
-const emptyForm = { name: '', studentId: '', email: '', department: '', password: '' };
+const emptyForm = { name: '', studentId: '', email: '', department: '', password: '', role: 'student' };
 
 export default function AdminStudents() {
   const [students, setStudents] = useState([]);
@@ -27,7 +27,7 @@ export default function AdminStudents() {
   const openCreate = () => { setForm(emptyForm); setError(''); setModal('create'); };
   const openEdit = (s) => {
     setSelected(s);
-    setForm({ name: s.name, studentId: s.studentId, email: s.email, department: s.department || '', password: '' });
+    setForm({ name: s.name, studentId: s.studentId, email: s.email, department: s.department || '', password: '', role: s.role || 'student' });
     setError(''); setModal('edit');
   };
   const openDelete = (s) => { setSelected(s); setError(''); setModal('delete'); };
@@ -93,8 +93,8 @@ export default function AdminStudents() {
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Students</h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{students.length} student{students.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Users</h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{students.length} user{students.length !== 1 ? 's' : ''}</p>
           </div>
           <button onClick={openCreate}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-lg font-medium transition text-sm flex items-center gap-1.5">
@@ -136,6 +136,7 @@ export default function AdminStudents() {
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Student ID</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Email</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Department</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-600">Role</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Registered</th>
                     <th className="text-center px-4 py-3 font-semibold text-gray-600">Actions</th>
                   </tr>
@@ -154,6 +155,15 @@ export default function AdminStudents() {
                       <td className="px-4 py-3 text-gray-600 font-mono text-xs">{s.studentId}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{s.email}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{s.department || '—'}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                          s.role === 'admin'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-indigo-100 text-indigo-700'
+                        }`}>
+                          {s.role === 'admin' ? '👑 Admin' : '🎓 Student'}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(s.createdAt)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1.5">
@@ -189,6 +199,11 @@ export default function AdminStudents() {
                       <p className="font-bold text-gray-800 text-sm">{s.name}</p>
                       <p className="text-xs text-gray-400 font-mono">{s.studentId}</p>
                     </div>
+                    <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      s.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'
+                    }`}>
+                      {s.role === 'admin' ? '👑 Admin' : '🎓 Student'}
+                    </span>
                   </div>
                   <div className="text-xs text-gray-500 space-y-1 mb-3">
                     <p>📧 {s.email}</p>
@@ -248,6 +263,34 @@ export default function AdminStudents() {
                     placeholder="••••••••" />
                 </div>
               )}
+              {/* Role selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['student', 'admin'].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setForm({ ...form, role: r })}
+                      className={`flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 text-sm font-semibold transition ${
+                        form.role === r
+                          ? r === 'admin'
+                            ? 'border-purple-500 bg-purple-50 text-purple-700'
+                            : 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                          : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      <span>{r === 'admin' ? '👑' : '🎓'}</span>
+                      <span className="capitalize">{r}</span>
+                    </button>
+                  ))}
+                </div>
+                {form.role === 'admin' && (
+                  <p className="text-xs text-purple-600 mt-1.5 flex items-center gap-1">
+                    <span>⚠️</span> This user will have full admin access.
+                  </p>
+                )}
+              </div>
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={closeModal}
                   className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">

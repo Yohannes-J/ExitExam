@@ -64,7 +64,9 @@ router.get('/results', async (req, res) => {
 // GET /api/admin/students
 router.get('/students', async (req, res) => {
   try {
-    const students = await User.find({ role: 'student' }).select('-password').sort({ createdAt: -1 });
+    const students = await User.find({ role: { $in: ['student', 'admin'] } })
+      .select('-password')
+      .sort({ role: 1, createdAt: -1 });
     res.json(students);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -90,8 +92,12 @@ router.post('/students', async (req, res) => {
 // PUT /api/admin/students/:id — update student info
 router.put('/students/:id', async (req, res) => {
   try {
-    const { name, studentId, email, department, password } = req.body;
+    const { name, studentId, email, department, password, role } = req.body;
     const update = { name, studentId, email, department };
+    // Only allow valid roles
+    if (role && ['student', 'admin'].includes(role)) {
+      update.role = role;
+    }
     // Only update password if provided
     if (password) {
       const user = await User.findById(req.params.id);
@@ -100,9 +106,10 @@ router.put('/students/:id', async (req, res) => {
       user.studentId = studentId;
       user.email = email;
       user.department = department;
-      user.password = password; // triggers pre-save hash
+      if (role && ['student', 'admin'].includes(role)) user.role = role;
+      user.password = password;
       await user.save();
-      return res.json({ id: user._id, name: user.name, studentId: user.studentId, email: user.email, department: user.department });
+      return res.json({ id: user._id, name: user.name, studentId: user.studentId, email: user.email, department: user.department, role: user.role });
     }
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
     if (!user) return res.status(404).json({ message: 'Student not found' });
