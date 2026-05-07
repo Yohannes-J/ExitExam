@@ -9,17 +9,20 @@ const router = express.Router();
 router.get('/', protect, async (req, res) => {
   try {
     const studentDept = req.user.department || '';
-    // Show exams that are for 'All' departments OR match the student's department
+
+    // Build department filter:
+    // - 'All' exams are visible to everyone
+    // - dept-specific exams only visible to matching students
+    // - empty dept exams only visible if student also has no dept
+    const deptFilter = studentDept
+      ? { $or: [{ department: 'All' }, { department: studentDept }] }
+      : { $or: [{ department: 'All' }, { department: '' }, { department: { $exists: false } }] };
+
     const exams = await Exam.find({
       isActive: true,
-      $or: [
-        { department: 'All' },
-        { department: studentDept },
-        { department: '' },
-      ],
+      ...deptFilter,
     }).select('-questions.correctIndex');
 
-    // Mark which exams the student already submitted
     const results = await Result.find({ student: req.user._id }).select('exam');
     const submittedIds = results.map((r) => r.exam.toString());
     const data = exams.map((e) => ({
@@ -40,7 +43,8 @@ router.get('/:id', protect, async (req, res) => {
 
     // Check department access
     const studentDept = req.user.department || '';
-    if (exam.department !== 'All' && exam.department !== '' && exam.department !== studentDept) {
+    const examDept = exam.department || '';
+    if (examDept !== 'All' && examDept !== '' && examDept !== studentDept) {
       return res.status(403).json({ message: 'This exam is not available for your department' });
     }
 
