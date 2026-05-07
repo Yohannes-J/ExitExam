@@ -169,6 +169,13 @@ router.delete('/students/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    // Prevent deleting the last superadmin
+    if (user.role === 'admin') {
+      const adminCount = await User.countDocuments({ role: 'admin' });
+      if (adminCount <= 1) {
+        return res.status(403).json({ message: 'Cannot delete the last admin account' });
+      }
+    }
     if (isTeacher(req.user) && user.department !== req.user.department) {
       return res.status(403).json({ message: 'Access denied' });
     }
