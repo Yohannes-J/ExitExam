@@ -20,6 +20,7 @@ export default function AdminStudents() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [sortAZ, setSortAZ] = useState(true); // true = A→Z, false = Z→A
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [studentForm, setStudentForm] = useState(emptyStudent);
@@ -51,8 +52,11 @@ export default function AdminStudents() {
   // Reset to page 1 when tab or search changes
   useEffect(() => { setPage(1); }, [tab, search]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const sorted = [...filtered].sort((a, b) =>
+    sortAZ ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+  );
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const closeModal = () => { setModal(null); setSelected(null); setError(""); setNewAdminCreds(null); setResetDone(null); };
   const showSuccess = (msg) => { setSuccess(msg); setTimeout(() => setSuccess(""), 4000); };
@@ -198,9 +202,24 @@ export default function AdminStudents() {
           ))}
         </div>
 
-        <input type="text" placeholder={"Search " + (tab === "students" ? "students" : "admins") + "..."}
-          value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-4" />
+        <div className="flex gap-2 mb-4">
+          <input type="text" placeholder={"Search " + (tab === "students" ? "students" : "admins") + "..."}
+            value={search} onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
+          <button
+            onClick={() => setSortAZ(p => !p)}
+            title={sortAZ ? "Sorted A→Z, click for Z→A" : "Sorted Z→A, click for A→Z"}
+            className="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-600 shrink-0"
+          >
+            <span>{sortAZ ? "A→Z" : "Z→A"}</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {sortAZ
+                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 0l4-4m0 0l4 4m-4-4v12" />
+                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m8 8l4-4m0 0l4 4m-4-4V8" />
+              }
+            </svg>
+          </button>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div></div>
@@ -310,7 +329,7 @@ export default function AdminStudents() {
         {filtered.length > PAGE_SIZE && (
           <div>
             <p className="text-center text-xs text-gray-400 mt-4">
-              Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+              Showing {Math.min((page - 1) * PAGE_SIZE + 1, sorted.length)}–{Math.min(page * PAGE_SIZE, sorted.length)} of {sorted.length}
             </p>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
