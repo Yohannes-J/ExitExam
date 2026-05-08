@@ -107,7 +107,7 @@ export default function ExamForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
                 <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Final Exit Exam 2024" />
+                  placeholder="exit exam" />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -119,7 +119,7 @@ export default function ExamForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
                 <input required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Computer Science" />
+                  placeholder="Software Engineering" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>

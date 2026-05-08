@@ -31,9 +31,8 @@ export default function Footer() {
         </div>
 
         {/* Divider + copyright */}
-        <div className="border-t border-white/5 mt-6 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-600">
-          <span>© {year} ExitExam Platform. All rights reserved.</span>
-          <span className="text-gray-700">Built with React · Express · MongoDB</span>
+        <div className="border-t border-white/5 mt-6 pt-5 text-center text-xs text-gray-500 font-semibold">
+          © {year} ExitExam Platform. All rights reserved.
         </div>
       </div>
     </footer>
