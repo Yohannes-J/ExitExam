@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
+import SchoolDeptSelect from '../../components/SchoolDeptSelect';
 
 const emptyQuestion = () => ({ text: '', code: '', type: 'mcq', options: ['', '', '', ''], correctIndex: 0, correctText: '', points: 1 });
 

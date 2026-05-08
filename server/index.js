@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.js';
 import examRoutes from './routes/exam.js';
 import resultRoutes from './routes/result.js';
 import adminRoutes from './routes/admin.js';
+import schoolRoutes from './routes/school.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/schools', schoolRoutes);
 
 // Serve React frontend in production
 const clientDist = path.join(__dirname, '../client/dist');

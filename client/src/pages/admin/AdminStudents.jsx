@@ -4,9 +4,10 @@ import { useAuth } from "../../context/AuthContext";
 import Pagination from "../../components/Pagination";
 import PasswordInput from "../../components/PasswordInput";
 import { validatePassword } from "../../utils/password";
+import SchoolDeptSelect from "../../components/SchoolDeptSelect";
 
-const emptyStudent = { name: "", studentId: "", department: "", password: "" };
-const emptyAdmin = { name: "", email: "", department: "", role: "teacher" };
+const emptyStudent = { name: "", studentId: "", school: "", department: "", password: "" };
+const emptyAdmin = { name: "", email: "", school: "", department: "", role: "teacher" };
 
 const PAGE_SIZE = 10;
 
@@ -307,9 +308,12 @@ export default function AdminStudents() {
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Student ID *</label>
                 <input required value={studentForm.studentId} onChange={(e) => setStudentForm({ ...studentForm, studentId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono" placeholder="UGR/12345/15" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <input value={studentForm.department} onChange={(e) => setStudentForm({ ...studentForm, department: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Computer Science" /></div>
+              <SchoolDeptSelect
+                school={studentForm.school}
+                onSchoolChange={v => setStudentForm({ ...studentForm, school: v, department: '' })}
+                department={studentForm.department}
+                onDeptChange={v => setStudentForm({ ...studentForm, department: v })}
+              />
               <PasswordInput
                 label="Password"
                 required
@@ -355,9 +359,12 @@ export default function AdminStudents() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                     <input required type="email" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="teacher@university.edu" /></div>
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                    <input value={adminForm.department} onChange={(e) => setAdminForm({ ...adminForm, department: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Computer Science" /></div>
+                  <SchoolDeptSelect
+                    school={adminForm.school}
+                    onSchoolChange={v => setAdminForm({ ...adminForm, school: v, department: '' })}
+                    department={adminForm.department}
+                    onDeptChange={v => setAdminForm({ ...adminForm, department: v })}
+                  />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                     <div className="grid grid-cols-2 gap-2">
