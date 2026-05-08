@@ -1,8 +1,15 @@
 ﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminResults() {
+  const { user } = useAuth();
+  const isTeacher = user?.role === 'teacher';
+  const myDepts = isTeacher
+    ? (user?.departments?.length > 0 ? user.departments : user?.department ? [user.department] : [])
+    : [];
+
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -11,7 +18,8 @@ export default function AdminResults() {
   const [confirmId, setConfirmId] = useState(null);
   const [success, setSuccess] = useState("");
   const [viewMode, setViewMode] = useState("all"); // "all" | "departments"
-  const [activeDept, setActiveDept] = useState(null);
+  const [activeDept, setActiveDept] = useState(null); // drilldown dept for admin
+  const [teacherDeptTab, setTeacherDeptTab] = useState('all'); // tab for teacher
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,11 +47,9 @@ export default function AdminResults() {
       r.student?.studentId?.toLowerCase().includes(search.toLowerCase()) ||
       r.exam?.title?.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || (filter === "passed" ? r.passed : !r.passed);
-    // For teachers: filter by their active dept tab
-    // For admins: filter by drilldown dept (null = show all)
     const matchDept = isTeacher
-      ? (activeDept === 'all' || r.student?.department === activeDept)
-      : (!deptDrilldown || r.student?.department === deptDrilldown);
+      ? (teacherDeptTab === 'all' || r.student?.department === teacherDeptTab)
+      : (!activeDept || r.student?.department === activeDept);
     return matchSearch && matchFilter && matchDept;
   });
 
