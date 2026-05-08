@@ -203,20 +203,20 @@ export default function AdminResults() {
                   </td>
                   <td className="px-4 py-3 text-center text-gray-500 text-xs">{formatTime(r.timeTaken)}</td>
                   <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(r.submittedAt)}</td>
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
                     {confirmId === r._id ? (
                       <div className="flex items-center justify-center gap-1.5">
-                        <button onClick={() => handleDelete(r._id)} disabled={deleting === r._id}
+                        <button onClick={(e) => { e.stopPropagation(); handleDelete(r._id); }} disabled={deleting === r._id}
                           className="text-xs px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50">
                           {deleting === r._id ? "..." : "Confirm"}
                         </button>
-                        <button onClick={() => setConfirmId(null)}
+                        <button onClick={(e) => { e.stopPropagation(); setConfirmId(null); }}
                           className="text-xs px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-medium transition">
                           Cancel
                         </button>
                       </div>
                     ) : (
-                      <button onClick={() => setConfirmId(r._id)}
+                      <button onClick={(e) => { e.stopPropagation(); setConfirmId(r._id); }}
                         className="text-xs px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition">
                         Delete
                       </button>
