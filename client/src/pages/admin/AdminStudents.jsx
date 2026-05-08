@@ -310,9 +310,9 @@ export default function AdminStudents() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono" placeholder="UGR/12345/15" /></div>
               <SchoolDeptSelect
                 school={studentForm.school}
-                onSchoolChange={v => setStudentForm({ ...studentForm, school: v, department: '' })}
+                onSchoolChange={v => setStudentForm(prev => ({ ...prev, school: v, department: '' }))}
                 department={studentForm.department}
-                onDeptChange={v => setStudentForm({ ...studentForm, department: v })}
+                onDeptChange={v => setStudentForm(prev => ({ ...prev, department: v }))}
               />
               <PasswordInput
                 label="Password"
@@ -361,9 +361,9 @@ export default function AdminStudents() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="teacher@university.edu" /></div>
                   <SchoolDeptSelect
                     school={adminForm.school}
-                    onSchoolChange={v => setAdminForm({ ...adminForm, school: v, department: '' })}
+                    onSchoolChange={v => setAdminForm(prev => ({ ...prev, school: v, department: '' }))}
                     department={adminForm.department}
-                    onDeptChange={v => setAdminForm({ ...adminForm, department: v })}
+                    onDeptChange={v => setAdminForm(prev => ({ ...prev, department: v }))}
                   />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
