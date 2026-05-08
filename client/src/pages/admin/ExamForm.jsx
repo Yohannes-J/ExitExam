@@ -17,6 +17,7 @@ export default function ExamForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [departments, setDepartments] = useState([]);
+  const [newQType, setNewQType] = useState('mcq');
 
   // Common departments list + fetch from existing students
   const DEFAULT_DEPTS = ['All', 'Computer Science', 'Information Technology', 'Software Engineering', 'Electrical Engineering', 'Civil Engineering', 'Mechanical Engineering', 'Business Administration', 'Accounting', 'Law', 'Medicine', 'Nursing', 'Natural Science', 'Social Science'];
@@ -55,7 +56,10 @@ export default function ExamForm() {
     });
   };
 
-  const addQuestion = () => setForm((prev) => ({ ...prev, questions: [...prev.questions, emptyQuestion()] }));
+  const addQuestion = () => setForm((prev) => ({
+    ...prev,
+    questions: [...prev.questions, { ...emptyQuestion(), type: newQType }],
+  }));
   const removeQuestion = (i) => setForm((prev) => ({ ...prev, questions: prev.questions.filter((_, idx) => idx !== i) }));
 
   const handleSubmit = async (e) => {
@@ -196,18 +200,43 @@ export default function ExamForm() {
 
           {/* Questions */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <h2 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Questions ({form.questions.length})</h2>
-              <button type="button" onClick={addQuestion}
-                className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-sm font-medium px-3 py-1.5 rounded-lg transition">
-                + Add Question
-              </button>
+              <div className="flex items-center gap-2">
+                <select
+                  value={newQType}
+                  onChange={(e) => setNewQType(e.target.value)}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-700"
+                >
+                  <option value="mcq">☑ Multiple Choice</option>
+                  <option value="truefalse">◎ True / False</option>
+                  <option value="short">✏️ Short Answer</option>
+                  <option value="essay">📝 Essay</option>
+                </select>
+                <button type="button" onClick={addQuestion}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                  + Add
+                </button>
+              </div>
             </div>
 
             {form.questions.map((q, qi) => (
               <div key={qi} className="bg-white rounded-2xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="bg-indigo-100 text-indigo-700 text-sm font-bold px-3 py-1 rounded-full">Q{qi + 1}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-indigo-100 text-indigo-700 text-sm font-bold px-3 py-1 rounded-full">Q{qi + 1}</span>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      q.type === 'truefalse' ? 'bg-blue-100 text-blue-700'
+                      : q.type === 'short' ? 'bg-amber-100 text-amber-700'
+                      : q.type === 'essay' ? 'bg-purple-100 text-purple-700'
+                      : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {q.type === 'truefalse' ? '◎ True/False'
+                        : q.type === 'short' ? '✏️ Short Answer'
+                        : q.type === 'essay' ? '📝 Essay'
+                        : '☑ MCQ'}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-3">
                     <label className="text-xs text-gray-500">Points:</label>
                     <input type="number" min={1} value={q.points} onChange={(e) => updateQuestion(qi, 'points', Number(e.target.value))}
@@ -264,28 +293,7 @@ export default function ExamForm() {
                   )}
                 </div>
 
-                {/* Question type selector */}
-                <div className="mb-4">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Question Type</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { value: 'mcq',       label: '☑ Multiple Choice', color: 'indigo' },
-                      { value: 'truefalse', label: '◎ True / False',    color: 'blue'   },
-                      { value: 'short',     label: '✏️ Short Answer',    color: 'amber'  },
-                      { value: 'essay',     label: '📝 Essay',           color: 'purple' },
-                    ].map(({ value, label, color }) => (
-                      <button key={value} type="button"
-                        onClick={() => updateQuestion(qi, 'type', value)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition ${
-                          q.type === value
-                            ? `border-${color}-500 bg-${color}-50 text-${color}-700`
-                            : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'
-                        }`}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {/* Question type selector — removed, use dropdown above */}
 
                 {/* MCQ options */}
                 {q.type === 'mcq' && (
