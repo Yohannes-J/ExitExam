@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../api/axios';
 
 export default function TeacherStudents() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeDept, setActiveDept] = useState('');
@@ -20,9 +22,14 @@ export default function TeacherStudents() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Set first dept as default tab
+  // Set dept from URL param or default to first
   useEffect(() => {
-    if (myDepts.length > 0 && !activeDept) setActiveDept(myDepts[0]);
+    const deptParam = searchParams.get('dept');
+    if (deptParam && myDepts.includes(deptParam)) {
+      setActiveDept(deptParam);
+    } else if (myDepts.length > 0 && !activeDept) {
+      setActiveDept(myDepts[0]);
+    }
   }, [myDepts]);
 
   const deptStudents = students.filter(s => s.department === activeDept);
