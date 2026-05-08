@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 const answerSchema = new mongoose.Schema({
   questionId: mongoose.Schema.Types.ObjectId,
-  selectedIndex: { type: Number, default: -1 }, // -1 = unanswered
+  selectedIndex: { type: Number, default: -1 },
+  textAnswer: { type: String, default: '' },
   isCorrect: { type: Boolean, default: false },
 });
 

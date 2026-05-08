@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 const questionSchema = new mongoose.Schema({
   text: { type: String, required: true },
   code: { type: String, default: '' },
-  options: [{ type: String, required: true }],
-  correctIndex: { type: Number, required: true },
+  type: { type: String, enum: ['mcq', 'truefalse', 'short', 'essay'], default: 'mcq' },
+  options: [{ type: String }],
+  correctIndex: { type: Number, default: 0 },
+  correctText: { type: String, default: '' }, // for short answer
   points: { type: Number, default: 1 },
 });
 

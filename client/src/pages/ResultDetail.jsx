@@ -134,38 +134,61 @@ export default function ResultDetail() {
                             {q.code}
                           </pre>
                         )}
-                        {/* All options */}
-                        <div className="space-y-1.5">
-                          {q.options.map((opt, j) => {
-                            const isCorrectOpt = j === q.correctIndex;
-                            const isSelected = j === selected;
-                            const isWrongSelected = isSelected && !isCorrect;
+                    {/* All options for MCQ/TrueFalse */}
+                        {(q.type === 'mcq' || !q.type || q.type === 'truefalse') && (
+                          <div className="space-y-1.5">
+                            {(q.type === 'truefalse' ? ['True', 'False'] : q.options).map((opt, j) => {
+                              const isCorrectOpt = j === q.correctIndex;
+                              const isSelected = j === selected;
+                              const isWrongSelected = isSelected && !isCorrect;
+                              let rowClass = 'text-gray-500 bg-transparent';
+                              if (isCorrectOpt && isSelected) rowClass = 'bg-emerald-100 text-emerald-800 font-semibold';
+                              else if (isCorrectOpt) rowClass = 'bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200';
+                              else if (isWrongSelected) rowClass = 'bg-red-100 text-red-800 font-semibold';
+                              return (
+                                <div key={j} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${rowClass}`}>
+                                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                                    isCorrectOpt && isSelected ? 'bg-emerald-500 text-white'
+                                    : isCorrectOpt ? 'bg-emerald-400 text-white'
+                                    : isWrongSelected ? 'bg-red-500 text-white'
+                                    : 'bg-gray-200 text-gray-500'
+                                  }`}>
+                                    {q.type === 'truefalse' ? (j === 0 ? 'T' : 'F') : String.fromCharCode(65 + j)}
+                                  </span>
+                                  <span className="flex-1">{opt}</span>
+                                  {isCorrectOpt && !isWrongSelected && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct</span>}
+                                  {isWrongSelected && <span className="ml-auto text-red-500 font-semibold text-xs shrink-0">✗ Your answer</span>}
+                                </div>
+                              );
+                            })}
+                            {(selected === -1 || selected === undefined) && (
+                              <p className="text-xs text-gray-400 italic px-3">— Not answered</p>
+                            )}
+                          </div>
+                        )}
 
-                            let rowClass = 'text-gray-500 bg-transparent';
-                            if (isCorrectOpt && isSelected) rowClass = 'bg-emerald-100 text-emerald-800 font-semibold';
-                            else if (isCorrectOpt) rowClass = 'bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200';
-                            else if (isWrongSelected) rowClass = 'bg-red-100 text-red-800 font-semibold';
-
-                            return (
-                              <div key={j} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${rowClass}`}>
-                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                                  isCorrectOpt && isSelected ? 'bg-emerald-500 text-white'
-                                  : isCorrectOpt ? 'bg-emerald-400 text-white'
-                                  : isWrongSelected ? 'bg-red-500 text-white'
-                                  : 'bg-gray-200 text-gray-500'
-                                }`}>
-                                  {String.fromCharCode(65 + j)}
-                                </span>
-                                <span className="flex-1">{opt}</span>
-                                {isCorrectOpt && !isWrongSelected && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct</span>}
-                                {isWrongSelected && <span className="ml-auto text-red-500 font-semibold text-xs shrink-0">✗ Your answer</span>}
+                        {/* Short / Essay answer */}
+                        {(q.type === 'short' || q.type === 'essay') && (
+                          <div className="space-y-2">
+                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                              <p className="text-xs text-gray-400 mb-1 font-semibold uppercase tracking-wide">Student's Answer</p>
+                              <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                                {ans?.textAnswer || <span className="italic text-gray-400">Not answered</span>}
+                              </p>
+                            </div>
+                            {q.correctText && (
+                              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                                <p className="text-xs text-emerald-600 mb-1 font-semibold uppercase tracking-wide">
+                                  {q.type === 'essay' ? 'Grading Notes' : 'Expected Answer'}
+                                </p>
+                                <p className="text-sm text-emerald-800">{q.correctText}</p>
                               </div>
-                            );
-                          })}
-                          {(selected === -1 || selected === undefined) && (
-                            <p className="text-xs text-gray-400 italic px-3">— Not answered</p>
-                          )}
-                        </div>
+                            )}
+                            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                              ⏳ This question is graded manually by the teacher.
+                            </p>
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-4 text-center align-top pt-5">
                         {isCorrect ? (
@@ -201,19 +224,30 @@ export default function ResultDetail() {
                     </pre>
                   )}
                   <div className="ml-9 space-y-1.5">
-                    {q.options.map((opt, j) => (
-                      <div key={j} className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                        j === q.correctIndex ? 'bg-emerald-100 text-emerald-800 font-semibold'
-                        : j === selected && !isCorrect ? 'bg-red-100 text-red-800'
-                        : 'text-gray-500'
-                      }`}>
-                        <span className="font-bold w-4 shrink-0">{String.fromCharCode(65 + j)}.</span>
-                        <span>{opt}</span>
-                        {j === q.correctIndex && <span className="ml-auto text-emerald-600 text-xs">✓ Correct</span>}
-                        {j === selected && !isCorrect && <span className="ml-auto text-red-500 text-xs">Your answer</span>}
+                    {(q.type === 'mcq' || !q.type || q.type === 'truefalse') && (
+                      (q.type === 'truefalse' ? ['True', 'False'] : q.options).map((opt, j) => (
+                        <div key={j} className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 ${
+                          j === q.correctIndex ? 'bg-emerald-100 text-emerald-800 font-semibold'
+                          : j === selected && !isCorrect ? 'bg-red-100 text-red-800'
+                          : 'text-gray-500'
+                        }`}>
+                          <span className="font-bold w-4 shrink-0">{q.type === 'truefalse' ? (j === 0 ? 'T' : 'F') : String.fromCharCode(65 + j)}.</span>
+                          <span>{opt}</span>
+                          {j === q.correctIndex && !isCorrect && <span className="ml-auto text-emerald-600 text-xs">✓</span>}
+                          {j === selected && !isCorrect && <span className="ml-auto text-red-500 text-xs">✗</span>}
+                        </div>
+                      ))
+                    )}
+                    {(q.type === 'short' || q.type === 'essay') && (
+                      <div className="space-y-2">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2.5">
+                          <p className="text-xs text-gray-400 mb-1">Student's Answer</p>
+                          <p className="text-xs text-gray-800 whitespace-pre-wrap">{ans?.textAnswer || <span className="italic text-gray-400">Not answered</span>}</p>
+                        </div>
+                        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">⏳ Graded manually</p>
                       </div>
-                    ))}
-                    {(selected === -1 || selected === undefined) && (
+                    )}
+                    {(q.type === 'mcq' || !q.type) && (selected === -1 || selected === undefined) && (
                       <p className="text-xs text-gray-400 italic px-3">Not answered</p>
                     )}
                   </div>

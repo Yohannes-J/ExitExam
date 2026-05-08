@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
 
-const emptyQuestion = () => ({ text: '', code: '', options: ['', '', '', ''], correctIndex: 0, points: 1 });
+const emptyQuestion = () => ({ text: '', code: '', type: 'mcq', options: ['', '', '', ''], correctIndex: 0, correctText: '', points: 1 });
 
 export default function ExamForm() {
   const { id } = useParams();
@@ -65,7 +65,9 @@ export default function ExamForm() {
     for (let i = 0; i < form.questions.length; i++) {
       const q = form.questions[i];
       if (!q.text.trim()) { setError(`Question ${i + 1} text is empty`); return; }
-      if (q.options.some((o) => !o.trim())) { setError(`Question ${i + 1} has empty options`); return; }
+      if (q.type === 'mcq' && q.options.some((o) => !o.trim())) {
+        setError(`Question ${i + 1} has empty options`); return;
+      }
     }
     setSaving(true);
     try {
@@ -262,29 +264,97 @@ export default function ExamForm() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  {q.options.map((opt, oi) => (
-                    <div key={oi} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name={`correct-${qi}`}
-                        checked={q.correctIndex === oi}
-                        onChange={() => updateQuestion(qi, 'correctIndex', oi)}
-                        className="w-4 h-4 text-green-600"
-                      />
-                      <span className="text-sm font-bold text-gray-500 w-5">{String.fromCharCode(65 + oi)}.</span>
-                      <input
-                        required
-                        value={opt}
-                        onChange={(e) => updateOption(qi, oi, e.target.value)}
-                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                        placeholder={`Option ${String.fromCharCode(65 + oi)}`}
-                      />
-                      {q.correctIndex === oi && <span className="text-green-600 text-xs font-semibold">✓ Correct</span>}
-                    </div>
-                  ))}
+                {/* Question type selector */}
+                <div className="mb-4">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Question Type</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'mcq',       label: '☑ Multiple Choice', color: 'indigo' },
+                      { value: 'truefalse', label: '◎ True / False',    color: 'blue'   },
+                      { value: 'short',     label: '✏️ Short Answer',    color: 'amber'  },
+                      { value: 'essay',     label: '📝 Essay',           color: 'purple' },
+                    ].map(({ value, label, color }) => (
+                      <button key={value} type="button"
+                        onClick={() => updateQuestion(qi, 'type', value)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition ${
+                          q.type === value
+                            ? `border-${color}-500 bg-${color}-50 text-${color}-700`
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'
+                        }`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Select the radio button next to the correct answer.</p>
+
+                {/* MCQ options */}
+                {q.type === 'mcq' && (
+                  <div className="space-y-2">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Options <span className="text-gray-400 font-normal normal-case">(select correct answer)</span></label>
+                    {q.options.map((opt, oi) => (
+                      <div key={oi} className="flex items-center gap-2">
+                        <input type="radio" name={`correct-${qi}`} checked={q.correctIndex === oi}
+                          onChange={() => updateQuestion(qi, 'correctIndex', oi)}
+                          className="w-4 h-4 text-green-600 shrink-0" />
+                        <span className="text-sm font-bold text-gray-400 w-5">{String.fromCharCode(65 + oi)}.</span>
+                        <input required value={opt} onChange={(e) => updateOption(qi, oi, e.target.value)}
+                          className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                          placeholder={`Option ${String.fromCharCode(65 + oi)}`} />
+                        {q.correctIndex === oi && <span className="text-green-600 text-xs font-semibold shrink-0">✓</span>}
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400">Select the radio button next to the correct answer.</p>
+                  </div>
+                )}
+
+                {/* True / False */}
+                {q.type === 'truefalse' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Correct Answer</label>
+                    <div className="flex gap-3">
+                      {['True', 'False'].map((val, idx) => (
+                        <button key={val} type="button"
+                          onClick={() => updateQuestion(qi, 'correctIndex', idx)}
+                          className={`flex-1 py-2.5 rounded-xl border-2 font-semibold text-sm transition ${
+                            q.correctIndex === idx
+                              ? idx === 0 ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700'
+                              : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                          }`}>
+                          {idx === 0 ? '✓ True' : '✗ False'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Short Answer */}
+                {q.type === 'short' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                      Expected Answer <span className="text-gray-400 font-normal normal-case">(used for reference — graded manually)</span>
+                    </label>
+                    <input value={q.correctText || ''} onChange={(e) => updateQuestion(qi, 'correctText', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                      placeholder="Expected answer (optional reference)" />
+                    <p className="text-xs text-gray-400 mt-1">Short answer questions are graded manually by the teacher.</p>
+                  </div>
+                )}
+
+                {/* Essay */}
+                {q.type === 'essay' && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-purple-700 text-sm font-semibold mb-1">
+                      <span>📝</span> Essay Question
+                    </div>
+                    <p className="text-xs text-purple-600">Students will write a long-form answer. Graded manually by the teacher.</p>
+                    <div className="mt-3">
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Grading Notes / Rubric (optional)</label>
+                      <textarea value={q.correctText || ''} onChange={(e) => updateQuestion(qi, 'correctText', e.target.value)}
+                        rows={2} className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm bg-white"
+                        placeholder="e.g. Mention 3 key points: X, Y, Z..." />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

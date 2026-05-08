@@ -168,7 +168,8 @@ export default function ExamPage() {
 
     const payload = exam.questions.map((q, i) => ({
       questionId: q._id,
-      selectedIndex: answers[i] ?? -1,
+      selectedIndex: (q.type === 'short' || q.type === 'essay') ? -1 : (answers[i] ?? -1),
+      textAnswer: (q.type === 'short' || q.type === 'essay') ? (answers[i] || '') : '',
     }));
     try {
       const { data } = await api.post(`/exams/${id}/submit`, { answers: payload, timeTaken });
@@ -201,7 +202,7 @@ export default function ExamPage() {
     });
   };
 
-  const answeredCount = Object.keys(answers).length;
+  const answeredCount = Object.values(answers).filter(v => v !== undefined && v !== '').length;
   const totalQ = exam?.questions?.length || 0;
   // The actual question to show at position currentQ in the shuffled order
   const realQIndex = questionOrder[currentQ] ?? currentQ;
@@ -325,7 +326,8 @@ export default function ExamPage() {
               </pre>
             )}
             <div className="space-y-2 sm:space-y-3">
-              {question.options.map((opt, i) => (
+              {/* MCQ */}
+              {(!question.type || question.type === 'mcq') && question.options.map((opt, i) => (
                 <button key={i} onClick={() => handleSelect(realQIndex, i)}
                   className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition font-medium text-sm sm:text-base ${
                     answers[realQIndex] === i
@@ -340,6 +342,65 @@ export default function ExamPage() {
                   {opt}
                 </button>
               ))}
+
+              {/* True / False */}
+              {question.type === 'truefalse' && (
+                <div className="flex gap-3">
+                  {['True', 'False'].map((val, i) => (
+                    <button key={val} onClick={() => handleSelect(realQIndex, i)}
+                      className={`flex-1 py-3 rounded-xl border-2 font-bold text-sm transition ${
+                        answers[realQIndex] === i
+                          ? i === 0 ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                      }`}>
+                      {i === 0 ? '✓ True' : '✗ False'}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Short Answer */}
+              {question.type === 'short' && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1.5">Your Answer</label>
+                  <input
+                    type="text"
+                    value={answers[realQIndex] ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAnswers(prev => {
+                        const next = val === '' ? (() => { const n = {...prev}; delete n[realQIndex]; return n; })() : { ...prev, [realQIndex]: val };
+                        persistSession(next, currentQ, timeLeftRef.current);
+                        return next;
+                      });
+                    }}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 text-sm transition"
+                    placeholder="Type your answer here..."
+                  />
+                </div>
+              )}
+
+              {/* Essay */}
+              {question.type === 'essay' && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1.5">Your Essay Answer</label>
+                  <textarea
+                    rows={6}
+                    value={answers[realQIndex] ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setAnswers(prev => {
+                        const next = val === '' ? (() => { const n = {...prev}; delete n[realQIndex]; return n; })() : { ...prev, [realQIndex]: val };
+                        persistSession(next, currentQ, timeLeftRef.current);
+                        return next;
+                      });
+                    }}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 text-sm transition resize-y"
+                    placeholder="Write your essay answer here..."
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Write a detailed answer. Your response will be reviewed by the teacher.</p>
+                </div>
+              )}
             </div>
           </div>
 

@@ -73,9 +73,20 @@ router.post('/:id/submit', protect, async (req, res) => {
     const gradedAnswers = exam.questions.map((q) => {
       const ans = answers?.find((a) => a.questionId === q._id.toString());
       const selectedIndex = ans ? ans.selectedIndex : -1;
-      const isCorrect = selectedIndex === q.correctIndex;
+      const textAnswer = ans ? (ans.textAnswer || '') : '';
+
+      let isCorrect = false;
+      if (q.type === 'mcq' || !q.type) {
+        isCorrect = selectedIndex === q.correctIndex;
+      } else if (q.type === 'truefalse') {
+        isCorrect = selectedIndex === q.correctIndex;
+      } else if (q.type === 'short' || q.type === 'essay') {
+        // Text answers are graded manually — mark as pending (false for now)
+        isCorrect = false;
+      }
+
       if (isCorrect) score += q.points;
-      return { questionId: q._id, selectedIndex, isCorrect };
+      return { questionId: q._id, selectedIndex, textAnswer, isCorrect };
     });
 
     const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
