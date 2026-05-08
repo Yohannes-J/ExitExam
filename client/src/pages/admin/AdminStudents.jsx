@@ -16,6 +16,8 @@ export default function AdminStudents() {
   const { user: currentUser } = useAuth();
   const isSuperAdmin = currentUser?.role === 'admin';
   const [tab, setTab] = useState("students");
+  const [viewMode, setViewMode] = useState("table"); // "table" | "departments"
+  const [activeDept, setActiveDept] = useState(null); // dept name when drilled in
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -172,7 +174,20 @@ export default function AdminStudents() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Users</h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{students.length} students · {admins.length} admins</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {/* View toggle — only on Students tab */}
+            {tab === "students" && (
+              <div className="flex bg-gray-100 p-0.5 rounded-lg">
+                <button onClick={() => { setViewMode("table"); setActiveDept(null); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${viewMode === "table" ? "bg-white shadow text-indigo-700" : "text-gray-500 hover:text-gray-700"}`}>
+                  ☰ List
+                </button>
+                <button onClick={() => { setViewMode("departments"); setActiveDept(null); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${viewMode === "departments" ? "bg-white shadow text-indigo-700" : "text-gray-500 hover:text-gray-700"}`}>
+                  🏛 By Dept
+                </button>
+              </div>
+            )}
             <button onClick={() => { setStudentForm(emptyStudent); setError(""); setModal("student"); }}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition">
               + Add Student
@@ -221,6 +236,94 @@ export default function AdminStudents() {
           </button>
         </div>
 
+        {/* Department view for students tab */}
+        {tab === "students" && viewMode === "departments" && (
+          activeDept ? (
+            // Drilled into a department
+            <div>
+              <button onClick={() => setActiveDept(null)}
+                className="flex items-center gap-1.5 text-gray-500 hover:text-indigo-600 text-sm font-medium transition mb-4">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                All Departments / <span className="text-indigo-600 font-semibold">{activeDept}</span>
+              </button>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-800">{activeDept}</h3>
+                  <span className="text-xs text-gray-400">{students.filter(s => s.department === activeDept).length} students</span>
+                </div>
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">#</th>
+                      <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Student</th>
+                      <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Student ID</th>
+                      <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {students.filter(s => s.department === activeDept)
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((s, i) => (
+                        <tr key={s._id} className="hover:bg-gray-50 transition">
+                          <td className="px-5 py-3 text-gray-400 text-xs">{i + 1}</td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                {s.name?.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium text-gray-800">{s.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3 text-gray-600 font-mono text-xs">{s.studentId}</td>
+                          <td className="px-5 py-3 text-gray-400 text-xs">{new Date(s.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            // Department cards
+            (() => {
+              const deptMap = {};
+              students.forEach(s => {
+                if (s.department) {
+                  deptMap[s.department] = (deptMap[s.department] || 0) + 1;
+                }
+              });
+              const depts = Object.entries(deptMap).sort(([a], [b]) => a.localeCompare(b));
+              return depts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl shadow-sm text-gray-400">
+                  <div className="text-5xl mb-3">🏛</div>
+                  <p>No departments found. Add students with departments first.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {depts.map(([dept, count]) => (
+                    <button key={dept} onClick={() => setActiveDept(dept)}
+                      className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-300 hover:shadow-md transition p-6 text-left group">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mb-4 group-hover:bg-indigo-600 group-hover:text-white transition">🎓</div>
+                      <h3 className="font-bold text-gray-800 text-lg mb-1">{dept}</h3>
+                      <p className="text-sm text-gray-500">{count} student{count !== 1 ? 's' : ''}</p>
+                      <div className="mt-4 flex items-center gap-1 text-indigo-600 text-sm font-medium">
+                        View students
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()
+          )
+        )}
+
+        {/* Normal table/card view */}
+        {(tab !== "students" || viewMode === "table") && (
+          <>
         {loading ? (
           <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div></div>
         ) : filtered.length === 0 ? (
@@ -333,6 +436,8 @@ export default function AdminStudents() {
             </p>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
+        )}
+          </>
         )}
       </div>
 
