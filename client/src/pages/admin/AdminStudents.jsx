@@ -239,7 +239,17 @@ export default function AdminStudents() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 font-mono text-xs">{tab === "students" ? u.studentId : u.email}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{u.department || "—"}</td>
+                      <td className="px-4 py-3 text-xs">
+                        {u.role === "teacher" && u.departments?.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {u.departments.map(d => (
+                              <span key={d} className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded text-xs">{d}</span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">{u.department || "—"}</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-center">
                         <span className={"text-xs font-semibold px-2.5 py-1 rounded-full " + (u.role === "admin" ? "bg-purple-100 text-purple-700" : u.role === "teacher" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700")}>
                           {u.role === "admin" ? "👑 Admin" : u.role === "teacher" ? "🏫 Teacher" : "🎓 Student"}
@@ -277,7 +287,11 @@ export default function AdminStudents() {
                       {u.role === "admin" ? "👑" : u.role === "teacher" ? "🏫" : "🎓"}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">🏛 {u.department || "—"} · 📅 {formatDate(u.createdAt)}</p>
+                  <p className="text-xs text-gray-500 mb-3">
+                    🏛 {u.role === "teacher" && u.departments?.length > 0
+                      ? u.departments.join(", ")
+                      : u.department || "—"} · 📅 {formatDate(u.createdAt)}
+                  </p>
                   <div className="grid grid-cols-3 gap-2">
                     <button onClick={() => openEdit(u)}
                       className="text-xs py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-medium transition">Edit</button>
