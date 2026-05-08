@@ -157,9 +157,8 @@ export default function ResultDetail() {
                                   {String.fromCharCode(65 + j)}
                                 </span>
                                 <span className="flex-1">{opt}</span>
-                                {isCorrectOpt && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct</span>}
+                                {isCorrectOpt && !isWrongSelected && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct</span>}
                                 {isWrongSelected && <span className="ml-auto text-red-500 font-semibold text-xs shrink-0">✗ Your answer</span>}
-                                {isCorrectOpt && isSelected && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct answer</span>}
                               </div>
                             );
                           })}
