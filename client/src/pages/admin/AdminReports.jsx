@@ -3,13 +3,21 @@ import api from "../../api/axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AdminReports() {
+  const { user } = useAuth();
+  const isTeacher = user?.role === 'teacher';
+  const myDepts = user?.departments?.length > 0
+    ? user.departments
+    : user?.department ? [user.department] : [];
+
   const [results, setResults] = useState([]);
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedExam, setSelectedExam] = useState("all");
   const [filter, setFilter] = useState("all");
+  const [activeDept, setActiveDept] = useState('all'); // dept tab for teachers
   const [checked, setChecked] = useState(new Set());
 
   useEffect(() => {
@@ -21,11 +29,12 @@ export default function AdminReports() {
   const filtered = results.filter((r) => {
     const matchExam = selectedExam === "all" || r.exam?._id === selectedExam;
     const matchFilter = filter === "all" || (filter === "passed" ? r.passed : !r.passed);
-    return matchExam && matchFilter;
+    const matchDept = !isTeacher || activeDept === 'all' || r.student?.department === activeDept;
+    return matchExam && matchFilter && matchDept;
   });
 
   // When filters change, clear selection
-  useEffect(() => { setChecked(new Set()); }, [selectedExam, filter]);
+  useEffect(() => { setChecked(new Set()); }, [selectedExam, filter, activeDept]);
 
   const allChecked = filtered.length > 0 && filtered.every(r => checked.has(r._id));
   const someChecked = filtered.some(r => checked.has(r._id));
@@ -155,6 +164,27 @@ export default function AdminReports() {
             </div>
           ))}
         </div>
+
+        {/* Department tabs for teachers */}
+        {isTeacher && myDepts.length > 1 && (
+          <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-xl w-fit flex-wrap">
+            <button onClick={() => setActiveDept('all')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${activeDept === 'all' ? 'bg-white shadow text-indigo-700' : 'text-gray-500 hover:text-gray-700'}`}>
+              All Depts
+              <span className="ml-1 text-xs opacity-60">({results.length})</span>
+            </button>
+            {myDepts.map(dept => {
+              const count = results.filter(r => r.student?.department === dept).length;
+              return (
+                <button key={dept} onClick={() => setActiveDept(dept)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${activeDept === dept ? 'bg-white shadow text-indigo-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                  {dept}
+                  <span className="ml-1 text-xs opacity-60">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-2 mb-4">

@@ -2,34 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
 import SchoolDeptSelect from '../../components/SchoolDeptSelect';
+import { useAuth } from '../../context/AuthContext';
 
 const emptyQuestion = () => ({ text: '', code: '', type: 'mcq', options: ['', '', '', ''], correctIndex: 0, correctText: '', points: 1 });
 
 export default function ExamForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isEdit = Boolean(id);
+  const isTeacher = user?.role === 'teacher';
 
   const [form, setForm] = useState({
-    title: '', description: '', subject: '', department: 'All',
-    duration: 30, passingScore: 60, isActive: true, questions: [emptyQuestion()],
+    title: '', description: '', subject: '', school: '', department: isTeacher ? (user?.department || '') : 'All',
+    duration: 30, passingScore: 60, isActive: true, shuffleQuestions: false, questions: [emptyQuestion()],
   });
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [departments, setDepartments] = useState([]);
   const [newQType, setNewQType] = useState('mcq');
-
-  // Common departments list + fetch from existing students
-  const DEFAULT_DEPTS = ['All', 'Computer Science', 'Information Technology', 'Software Engineering', 'Electrical Engineering', 'Civil Engineering', 'Mechanical Engineering', 'Business Administration', 'Accounting', 'Law', 'Medicine', 'Nursing', 'Natural Science', 'Social Science'];
-
-  useEffect(() => {
-    api.get('/admin/students').then((res) => {
-      const depts = [...new Set(res.data.map(u => u.department).filter(Boolean))];
-      const merged = [...new Set([...DEFAULT_DEPTS, ...depts])];
-      setDepartments(merged);
-    }).catch(() => setDepartments(DEFAULT_DEPTS));
-  }, []);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -128,16 +119,40 @@ export default function ExamForm() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Software Engineering" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                  {departments.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-400 mt-1">Select "All" to show to every student</p>
-              </div>
+
+              {/* Department — teacher picks from their departments, admin picks school+dept */}
+              {isTeacher ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+                  <select required value={form.department}
+                    onChange={e => setForm(prev => ({ ...prev, department: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white">
+                    <option value="">— Select your department —</option>
+                    {(user?.departments?.length > 0 ? user.departments : user?.department ? [user.department] : []).map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">Only students in this department will see the exam</p>
+                </div>
+              ) : (
+                <div className="col-span-2">
+                  <SchoolDeptSelect
+                    school={form.school || ''}
+                    onSchoolChange={v => setForm(prev => ({ ...prev, school: v, department: '' }))}
+                    department={form.department === 'All' ? '' : form.department}
+                    onDeptChange={v => setForm(prev => ({ ...prev, department: v || 'All' }))}
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <input type="checkbox" id="allDepts"
+                      checked={form.department === 'All'}
+                      onChange={e => setForm(prev => ({ ...prev, department: e.target.checked ? 'All' : '', school: e.target.checked ? '' : prev.school }))}
+                      className="w-4 h-4 text-indigo-600 rounded" />
+                    <label htmlFor="allDepts" className="text-sm text-gray-600">
+                      Show to <strong>all departments</strong> (no restriction)
+                    </label>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration *</label>
                 <div className="flex items-center gap-2">

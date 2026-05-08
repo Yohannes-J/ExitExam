@@ -27,7 +27,7 @@ export default function Navbar() {
     ? [
         { to: '/admin', label: 'Dashboard' },
         { to: '/admin/exams', label: 'Exams' },
-        { to: '/admin/students', label: 'Students' },
+        { to: '/admin/my-students', label: 'My Students' },
         { to: '/admin/results', label: 'Results' },
         { to: '/admin/reports', label: 'Reports' },
         { to: '/admin/profile', label: 'Profile' },

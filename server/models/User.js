@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema(
     email: { type: String, unique: true, sparse: true, lowercase: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['student', 'admin', 'teacher'], default: 'student' },
-    department: { type: String, default: '' },
+    department: { type: String, default: '' },       // for students
+    departments: [{ type: String }],                  // for teachers (multiple)
     phone: { type: String, default: '' },
   },
   { timestamps: true }

@@ -5,9 +5,10 @@ import Pagination from "../../components/Pagination";
 import PasswordInput from "../../components/PasswordInput";
 import { validatePassword } from "../../utils/password";
 import SchoolDeptSelect from "../../components/SchoolDeptSelect";
+import SchoolMultiDeptSelect from "../../components/SchoolMultiDeptSelect";
 
 const emptyStudent = { name: "", studentId: "", school: "", department: "", password: "" };
-const emptyAdmin = { name: "", email: "", school: "", department: "", role: "teacher" };
+const emptyAdmin = { name: "", email: "", school: "", department: "", departments: [], role: "teacher" };
 
 const PAGE_SIZE = 10;
 
@@ -71,8 +72,16 @@ export default function AdminStudents() {
 
   const handleCreateAdmin = async (e) => {
     e.preventDefault(); setError(""); setSaving(true);
+    if (adminForm.role === 'teacher' && adminForm.departments.length === 0) {
+      setError("Please select at least one department for the teacher");
+      setSaving(false); return;
+    }
     try {
-      const { data } = await api.post("/admin/admins", adminForm);
+      const payload = {
+        ...adminForm,
+        department: adminForm.departments[0] || adminForm.department,
+      };
+      const { data } = await api.post("/admin/admins", payload);
       setNewAdminCreds({ email: data.email, password: data.defaultPassword, name: data.name });
       showSuccess("Admin/Teacher created");
       setAdminForm(emptyAdmin);
@@ -359,11 +368,11 @@ export default function AdminStudents() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                     <input required type="email" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="teacher@university.edu" /></div>
-                  <SchoolDeptSelect
+                  <SchoolMultiDeptSelect
                     school={adminForm.school}
-                    onSchoolChange={v => setAdminForm(prev => ({ ...prev, school: v, department: '' }))}
-                    department={adminForm.department}
-                    onDeptChange={v => setAdminForm(prev => ({ ...prev, department: v }))}
+                    onSchoolChange={v => setAdminForm(prev => ({ ...prev, school: v, department: '', departments: [] }))}
+                    departments={adminForm.departments}
+                    onDeptsChange={v => setAdminForm(prev => ({ ...prev, departments: v }))}
                   />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>

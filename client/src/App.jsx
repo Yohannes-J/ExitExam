@@ -20,6 +20,7 @@ import AdminProfile from './pages/admin/AdminProfile';
 import AdminReports from './pages/admin/AdminReports';
 import AdminResultDetail from './pages/admin/AdminResultDetail';
 import AdminSchools from './pages/admin/AdminSchools';
+import TeacherStudents from './pages/admin/TeacherStudents';
 import StudentProfile from './pages/StudentProfile';
 
 function Layout({ children }) {
@@ -113,6 +114,11 @@ export default function App() {
           <Route path="/admin/schools" element={
             <ProtectedRoute adminOnly>
               <Layout><AdminSchools /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/my-students" element={
+            <ProtectedRoute adminOnly>
+              <Layout><TeacherStudents /></Layout>
             </ProtectedRoute>
           } />
           <Route path="/profile" element={

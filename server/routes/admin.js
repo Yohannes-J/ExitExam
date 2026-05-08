@@ -9,11 +9,19 @@ router.use(protect, adminOnly); // teachers + admins can access
 
 // Helper: is this user a teacher (not superadmin)?
 const isTeacher = (user) => user.role === 'teacher';
+// Helper: teacher's departments array (falls back to single department)
+const teacherDepts = (user) => {
+  if (user.departments && user.departments.length > 0) return user.departments;
+  if (user.department) return [user.department];
+  return [];
+};
 
 // GET /api/admin/exams — teachers see only their dept exams
 router.get('/exams', async (req, res) => {
   try {
-    const query = isTeacher(req.user) ? { department: { $in: [req.user.department, 'All'] } } : {};
+    const query = isTeacher(req.user)
+      ? { $or: [{ department: { $in: [req.user.department, 'All', ...teacherDepts(req.user)] } }] }
+      : {};
     const exams = await Exam.find(query).sort({ createdAt: -1 });
     res.json(exams);
   } catch (err) {
@@ -25,8 +33,13 @@ router.get('/exams', async (req, res) => {
 router.post('/exams', async (req, res) => {
   try {
     const data = { ...req.body, createdBy: req.user._id };
-    // Force teacher's department
-    if (isTeacher(req.user)) data.department = req.user.department;
+    // For teachers: validate the department is one of theirs
+    if (isTeacher(req.user)) {
+      const myDepts = teacherDepts(req.user);
+      if (!myDepts.includes(data.department)) {
+        data.department = myDepts[0] || req.user.department;
+      }
+    }
     const exam = await Exam.create(data);
     res.status(201).json(exam);
   } catch (err) {
@@ -76,9 +89,10 @@ router.get('/results', async (req, res) => {
       .sort({ submittedAt: -1 });
 
     if (isTeacher(req.user)) {
+      const myDepts = teacherDepts(req.user);
       results = results.filter(r =>
-        r.student?.department === req.user.department ||
-        r.exam?.department === req.user.department ||
+        myDepts.includes(r.student?.department) ||
+        myDepts.includes(r.exam?.department) ||
         r.exam?.department === 'All'
       );
     }
@@ -92,7 +106,7 @@ router.get('/results', async (req, res) => {
 router.get('/students', async (req, res) => {
   try {
     const query = isTeacher(req.user)
-      ? { role: 'student', department: req.user.department }
+      ? { role: 'student', department: { $in: teacherDepts(req.user) } }
       : { role: { $in: ['student', 'admin', 'teacher'] } };
     const students = await User.find(query).select('-password').sort({ role: 1, createdAt: -1 });
     res.json(students);
@@ -128,7 +142,7 @@ router.post('/students', async (req, res) => {
 // POST /api/admin/admins — create ADMIN or TEACHER (superadmin only)
 router.post('/admins', superAdminOnly, async (req, res) => {
   try {
-    const { name, email, department, role } = req.body;
+    const { name, email, department, departments, role } = req.body;
     if (!name || !email) {
       return res.status(400).json({ message: 'Full name and email are required' });
     }
@@ -138,13 +152,16 @@ router.post('/admins', superAdminOnly, async (req, res) => {
     const adminId = `ADM-${Date.now()}`;
     const defaultPassword = 'admin123';
     const user = await User.create({
-      name, email, department, role: validRole,
+      name, email,
+      department: department || '',
+      departments: validRole === 'teacher' ? (departments || []) : [],
+      role: validRole,
       studentId: adminId, password: defaultPassword,
     });
     res.status(201).json({
       id: user._id, name: user.name, email: user.email, studentId: user.studentId,
-      department: user.department, role: user.role, createdAt: user.createdAt,
-      defaultPassword,
+      department: user.department, departments: user.departments, role: user.role,
+      createdAt: user.createdAt, defaultPassword,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -159,6 +176,7 @@ router.put('/students/:id', async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (name) user.name = name;
     if (department !== undefined) user.department = department;
+    if (Array.isArray(req.body.departments)) user.departments = req.body.departments;
     if (role && ['student', 'admin', 'teacher'].includes(role) && !isTeacher(req.user)) user.role = role;
     if (studentId) user.studentId = studentId;
     if (email) user.email = email;
