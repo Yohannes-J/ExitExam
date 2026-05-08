@@ -123,7 +123,7 @@ export default function AdminStudents() {
       setStudentForm({ name: u.name, studentId: u.studentId, department: u.department || "", password: "" });
       setModal("editStudent");
     } else {
-      setAdminForm({ name: u.name, email: u.email || "", department: u.department || "", role: u.role });
+      setAdminForm({ name: u.name, email: u.email || "", school: u.school || "", department: u.department || "", departments: u.departments || [], role: u.role });
       setModal("editAdmin");
     }
   };
@@ -148,7 +148,8 @@ export default function AdminStudents() {
       await api.put("/admin/students/" + selected._id, {
         name: adminForm.name,
         email: adminForm.email,
-        department: adminForm.department,
+        departments: adminForm.departments || [],
+        department: (adminForm.departments || [])[0] || "",
         role: adminForm.role,
       });
       showSuccess("Profile updated successfully");
@@ -534,11 +535,15 @@ export default function AdminStudents() {
                 <input required type="email" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <input value={adminForm.department} onChange={(e) => setAdminForm({ ...adminForm, department: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Computer Science" />
-              </div>
+              {/* Departments — multi-select for teachers, hidden for admins */}
+              {adminForm.role === "teacher" ? (
+                <SchoolMultiDeptSelect
+                  school={adminForm.school || ""}
+                  onSchoolChange={v => setAdminForm(prev => ({ ...prev, school: v, departments: [] }))}
+                  departments={adminForm.departments || []}
+                  onDeptsChange={v => setAdminForm(prev => ({ ...prev, departments: v }))}
+                />
+              ) : null}
               {isSuperAdmin && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>

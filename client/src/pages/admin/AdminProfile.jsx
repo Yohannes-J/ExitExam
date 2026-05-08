@@ -53,7 +53,6 @@ export default function AdminProfile() {
             {[
               { label: 'Email', value: user?.email || '—' },
               { label: 'Admin ID', value: user?.studentId, mono: true },
-              { label: 'Department', value: user?.department || '—' },
             ].map(({ label, value, mono }) => (
               <div key={label} className="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
                 <span className="text-gray-400 w-28 shrink-0 text-sm">{label}</span>
