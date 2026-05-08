@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+/* Global large-screen improvements */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}

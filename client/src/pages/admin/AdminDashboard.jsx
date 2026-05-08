@@ -26,7 +26,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 xl:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
@@ -44,8 +44,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          {[
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">          {[
             { label: 'Exams', value: stats.exams, icon: '📋', color: 'indigo', link: '/admin/exams' },
             { label: 'Submissions', value: stats.results, icon: '📊', color: 'green', link: '/admin/results' },
             { label: 'Students', value: stats.students, icon: '🎓', color: 'blue', link: '/admin/students' },

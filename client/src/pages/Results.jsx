@@ -16,7 +16,7 @@ export default function Results() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto px-4 xl:px-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">My Results</h1>
 
         {loading && (

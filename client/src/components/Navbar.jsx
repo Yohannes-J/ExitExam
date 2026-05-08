@@ -39,7 +39,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-indigo-700 text-white shadow-lg relative z-50">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 xl:px-8">
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight shrink-0">
@@ -63,7 +63,7 @@ export default function Navbar() {
                   <span className="text-sm hidden lg:block max-w-[120px] truncate">{user.name}</span>
                   <button
                     onClick={handleLogout}
-                    className="ml-1 bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg text-sm transition"
+                    className="ml-1 bg-red-600 hover:bg-red-700 active:bg-red-800 px-3 py-1.5 rounded-lg text-sm font-medium transition shadow-sm"
                   >
                     Logout
                   </button>
@@ -114,7 +114,7 @@ export default function Navbar() {
             ))}
             <button
               onClick={handleLogout}
-              className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-red-600/30 text-sm font-medium text-red-300 transition mt-1"
+              className="w-full text-left px-3 py-2.5 rounded-lg bg-red-600/20 hover:bg-red-600/40 text-sm font-medium text-red-300 transition mt-1"
             >
               Logout
             </button>

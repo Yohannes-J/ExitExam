@@ -29,8 +29,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md xl:max-w-lg">
         <div className="text-center mb-8">
           <div className="text-6xl mb-3">🎓</div>
           <h1 className="text-3xl font-bold text-indigo-800">ExitExam Platform</h1>

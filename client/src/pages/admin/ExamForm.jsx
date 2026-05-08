@@ -90,7 +90,7 @@ export default function ExamForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto px-4 xl:px-8">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate('/admin/exams')} className="text-gray-500 hover:text-gray-700">← Back</button>
           <h1 className="text-2xl font-bold text-gray-800">{isEdit ? 'Edit Exam' : 'Create New Exam'}</h1>

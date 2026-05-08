@@ -298,7 +298,7 @@ export default function ExamPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex gap-4 lg:gap-6">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 xl:px-8 py-4 sm:py-6 flex gap-4 lg:gap-8">
         {/* Question panel */}
         <div className="flex-1 min-w-0">
           <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-4">
