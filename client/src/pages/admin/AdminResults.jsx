@@ -39,7 +39,11 @@ export default function AdminResults() {
       r.student?.studentId?.toLowerCase().includes(search.toLowerCase()) ||
       r.exam?.title?.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || (filter === "passed" ? r.passed : !r.passed);
-    const matchDept = !activeDept || r.student?.department === activeDept;
+    // For teachers: filter by their active dept tab
+    // For admins: filter by drilldown dept (null = show all)
+    const matchDept = isTeacher
+      ? (activeDept === 'all' || r.student?.department === activeDept)
+      : (!deptDrilldown || r.student?.department === deptDrilldown);
     return matchSearch && matchFilter && matchDept;
   });
 
