@@ -113,9 +113,7 @@ export default function ResultDetail() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide w-12">#</th>
-                  <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Question</th>
-                  <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Your Answer</th>
-                  <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Correct Answer</th>
+                  <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Question & Choices</th>
                   <th className="text-center px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide w-24">Result</th>
                 </tr>
               </thead>
@@ -124,31 +122,57 @@ export default function ResultDetail() {
                   const ans = result.answers[i];
                   const isCorrect = ans?.isCorrect;
                   const selected = ans?.selectedIndex;
-                  const yourAnswer = selected === -1 || selected === undefined
-                    ? <span className="italic text-gray-400">Not answered</span>
-                    : <span>{String.fromCharCode(65 + selected)}. {q.options[selected]}</span>;
-                  const correctAnswer = <span className="font-medium text-emerald-700">{String.fromCharCode(65 + q.correctIndex)}. {q.options[q.correctIndex]}</span>;
 
                   return (
-                    <tr key={i} className={`transition hover:bg-gray-50/80 ${isCorrect ? '' : 'bg-red-50/30'}`}>
-                      <td className="px-5 py-4 text-gray-400 font-mono text-xs">{i + 1}</td>
+                    <tr key={i} className={`transition ${isCorrect ? 'hover:bg-gray-50/80' : 'bg-red-50/20 hover:bg-red-50/40'}`}>
+                      <td className="px-5 py-4 text-gray-400 font-mono text-xs align-top">{i + 1}</td>
                       <td className="px-5 py-4">
-                        <p className="text-gray-800 font-medium text-sm leading-snug">{q.text}</p>
+                        {/* Question text */}
+                        <p className="text-gray-800 font-medium text-sm leading-snug mb-3">{q.text}</p>
                         {q.code && (
-                          <pre className="mt-2 bg-gray-900 text-green-400 rounded-lg p-2.5 text-xs font-mono overflow-x-auto whitespace-pre">
+                          <pre className="mb-3 bg-gray-900 text-green-400 rounded-lg p-2.5 text-xs font-mono overflow-x-auto whitespace-pre">
                             {q.code}
                           </pre>
                         )}
+                        {/* All options */}
+                        <div className="space-y-1.5">
+                          {q.options.map((opt, j) => {
+                            const isCorrectOpt = j === q.correctIndex;
+                            const isSelected = j === selected;
+                            const isWrongSelected = isSelected && !isCorrect;
+
+                            let rowClass = 'text-gray-500 bg-transparent';
+                            if (isCorrectOpt && isSelected) rowClass = 'bg-emerald-100 text-emerald-800 font-semibold';
+                            else if (isCorrectOpt) rowClass = 'bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200';
+                            else if (isWrongSelected) rowClass = 'bg-red-100 text-red-800 font-semibold';
+
+                            return (
+                              <div key={j} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${rowClass}`}>
+                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                                  isCorrectOpt && isSelected ? 'bg-emerald-500 text-white'
+                                  : isCorrectOpt ? 'bg-emerald-400 text-white'
+                                  : isWrongSelected ? 'bg-red-500 text-white'
+                                  : 'bg-gray-200 text-gray-500'
+                                }`}>
+                                  {String.fromCharCode(65 + j)}
+                                </span>
+                                <span className="flex-1">{opt}</span>
+                                {isCorrectOpt && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct</span>}
+                                {isWrongSelected && <span className="ml-auto text-red-500 font-semibold text-xs shrink-0">✗ Your answer</span>}
+                                {isCorrectOpt && isSelected && <span className="ml-auto text-emerald-600 font-semibold text-xs shrink-0">✓ Correct answer</span>}
+                              </div>
+                            );
+                          })}
+                          {(selected === -1 || selected === undefined) && (
+                            <p className="text-xs text-gray-400 italic px-3">— Not answered</p>
+                          )}
+                        </div>
                       </td>
-                      <td className={`px-5 py-4 text-sm ${isCorrect ? 'text-gray-700' : 'text-red-600'}`}>
-                        {yourAnswer}
-                      </td>
-                      <td className="px-5 py-4 text-sm">{correctAnswer}</td>
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-5 py-4 text-center align-top pt-5">
                         {isCorrect ? (
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm">✓</span>
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 font-bold text-base">✓</span>
                         ) : (
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm">✗</span>
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 font-bold text-base">✗</span>
                         )}
                       </td>
                     </tr>
