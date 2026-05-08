@@ -192,6 +192,19 @@ router.delete('/students/:id', async (req, res) => {
   }
 });
 
+// GET /api/admin/results/:id — full result detail for admin/teacher
+router.get('/results/:id', async (req, res) => {
+  try {
+    const result = await Result.findById(req.params.id)
+      .populate('student', 'name studentId department email')
+      .populate('exam');
+    if (!result) return res.status(404).json({ message: 'Result not found' });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // DELETE /api/admin/results/:id
 router.delete('/results/:id', async (req, res) => {
   try {

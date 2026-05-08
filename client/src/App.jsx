@@ -18,6 +18,7 @@ import AdminResults from './pages/admin/AdminResults';
 import AdminStudents from './pages/admin/AdminStudents';
 import AdminProfile from './pages/admin/AdminProfile';
 import AdminReports from './pages/admin/AdminReports';
+import AdminResultDetail from './pages/admin/AdminResultDetail';
 import StudentProfile from './pages/StudentProfile';
 
 function Layout({ children }) {
@@ -86,6 +87,11 @@ export default function App() {
           <Route path="/admin/results" element={
             <ProtectedRoute adminOnly>
               <Layout><AdminResults /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/results/:id" element={
+            <ProtectedRoute adminOnly>
+              <Layout><AdminResultDetail /></Layout>
             </ProtectedRoute>
           } />
           <Route path="/admin/students" element={

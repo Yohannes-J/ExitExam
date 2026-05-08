@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 
 export default function AdminResults() {
@@ -9,6 +10,7 @@ export default function AdminResults() {
   const [deleting, setDeleting] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get("/admin/results").then((res) => setResults(res.data)).finally(() => setLoading(false));
@@ -100,7 +102,9 @@ export default function AdminResults() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map((r) => (
-                <tr key={r._id} className="hover:bg-gray-50 transition">
+                <tr key={r._id}
+                  onClick={() => navigate(`/admin/results/${r._id}`)}
+                  className="hover:bg-indigo-50/40 transition cursor-pointer group">
                   <td className="px-4 py-3">
                     <div className="font-medium text-gray-800">{r.student?.name}</div>
                     <div className="text-xs text-gray-400">{r.student?.studentId}</div>
