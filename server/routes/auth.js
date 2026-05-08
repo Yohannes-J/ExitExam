@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
     const token = signToken(user._id);
     res.json({
       token,
-      user: { id: user._id, name: user.name, studentId: user.studentId, email: user.email, role: user.role, department: user.department },
+      user: { id: user._id, name: user.name, studentId: user.studentId, email: user.email, role: user.role, department: user.department, phone: user.phone },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,15 +42,31 @@ router.get('/me', protect, (req, res) => {
   res.json({ user: req.user });
 });
 
+// PUT /api/auth/profile — update own profile (name, phone)
+router.put('/profile', protect, async (req, res) => {
+  try {
+    const { phone } = req.body;
+    const user = await User.findById(req.user._id);
+    if (phone !== undefined) user.phone = phone;
+    await user.save();
+    res.json({ user: { id: user._id, name: user.name, studentId: user.studentId, email: user.email, role: user.role, department: user.department, phone: user.phone } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // PUT /api/auth/change-password
 router.put('/change-password', protect, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'Both current and new password are required' });
+      return res.status(400).json({ message: 'Current and new password are required' });
     }
     if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'New password must be at least 6 characters' });
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+    if (!/[a-zA-Z]/.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must contain at least 1 letter' });
     }
     const user = await User.findById(req.user._id);
     const match = await user.comparePassword(currentPassword);

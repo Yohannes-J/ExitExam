@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
+import { validatePassword } from '../../utils/password';
+import PasswordInput from '../../components/PasswordInput';
 
 export default function AdminProfile() {
   const { user } = useAuth();
@@ -8,15 +10,14 @@ export default function AdminProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (form.newPassword.length < 6) { setError('New password must be at least 6 characters'); return; }
-    if (form.newPassword !== form.confirm) { setError('New passwords do not match'); return; }
+    if (!form.currentPassword) { setError('Current password is required'); return; }
+    const pwdErr = validatePassword(form.newPassword);
+    if (pwdErr) { setError(pwdErr); return; }
+    if (form.newPassword !== form.confirm) { setError('Passwords do not match'); return; }
     setSaving(true);
     try {
       await api.put('/auth/change-password', {
@@ -48,26 +49,24 @@ export default function AdminProfile() {
               <p className="text-sm text-indigo-600 font-medium capitalize">{user?.role}</p>
             </div>
           </div>
-          <div className="space-y-2 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400 w-24 shrink-0">Email</span>
-              <span className="font-medium">{user?.email}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400 w-24 shrink-0">Admin ID</span>
-              <span className="font-medium font-mono">{user?.studentId}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400 w-24 shrink-0">Department</span>
-              <span className="font-medium">{user?.department || '—'}</span>
-            </div>
+          <div className="space-y-2">
+            {[
+              { label: 'Email', value: user?.email || '—' },
+              { label: 'Admin ID', value: user?.studentId, mono: true },
+              { label: 'Department', value: user?.department || '—' },
+            ].map(({ label, value, mono }) => (
+              <div key={label} className="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
+                <span className="text-gray-400 w-28 shrink-0 text-sm">{label}</span>
+                <span className={`font-medium text-gray-800 text-sm ${mono ? 'font-mono' : ''}`}>{value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Change password */}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
           <h2 className="font-bold text-gray-800 mb-1">Change Password</h2>
-          <p className="text-sm text-gray-500 mb-5">Update your admin password here.</p>
+          <p className="text-sm text-gray-500 mb-5">Enter your current password to set a new one.</p>
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
@@ -81,69 +80,35 @@ export default function AdminProfile() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Current password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password *</label>
-              <div className="relative">
-                <input required type={showCurrent ? 'text' : 'password'}
-                  value={form.currentPassword}
-                  onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
-                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="Enter current password" />
-                <button type="button" onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
-                  {showCurrent ? '🙈' : '👁️'}
-                </button>
-              </div>
-            </div>
-
-            {/* New password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Password *</label>
-              <div className="relative">
-                <input required type={showNew ? 'text' : 'password'}
-                  value={form.newPassword}
-                  onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
-                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                  placeholder="Enter new password" minLength={6} />
-                <button type="button" onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
-                  {showNew ? '🙈' : '👁️'}
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">Minimum 6 characters</p>
-            </div>
-
-            {/* Confirm new password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password *</label>
-              <div className="relative">
-                <input required type={showConfirm ? 'text' : 'password'}
-                  value={form.confirm}
-                  onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-                  className={`w-full px-3 py-2.5 pr-10 border rounded-lg focus:outline-none focus:ring-2 text-sm transition ${
-                    form.confirm && form.newPassword !== form.confirm
-                      ? 'border-red-300 focus:ring-red-300 bg-red-50'
-                      : form.confirm && form.newPassword === form.confirm
-                      ? 'border-green-300 focus:ring-green-300 bg-green-50'
-                      : 'border-gray-300 focus:ring-indigo-500'
-                  }`}
-                  placeholder="Confirm new password" />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
-                  {showConfirm ? '🙈' : '👁️'}
-                </button>
-              </div>
-              {form.confirm && form.newPassword !== form.confirm && (
-                <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
-              )}
-              {form.confirm && form.newPassword === form.confirm && (
-                <p className="text-xs text-green-600 mt-1">✓ Passwords match</p>
-              )}
-            </div>
-
+            <PasswordInput
+              label="Current Password"
+              showStrength={false}
+              hint=""
+              value={form.currentPassword}
+              onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
+              placeholder="Enter current password"
+            />
+            <PasswordInput
+              label="New Password"
+              value={form.newPassword}
+              onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
+              placeholder="Enter new password"
+            />
+            <PasswordInput
+              label="Confirm New Password"
+              showStrength={false}
+              hint=""
+              value={form.confirm}
+              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+              placeholder="Repeat new password"
+            />
+            {form.confirm && (
+              <p className={`text-xs -mt-2 ${form.newPassword !== form.confirm ? 'text-red-500' : 'text-green-600'}`}>
+                {form.newPassword !== form.confirm ? 'Passwords do not match' : '✓ Passwords match'}
+              </p>
+            )}
             <button type="submit" disabled={saving}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2.5 rounded-lg transition font-semibold text-sm mt-2">
+              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
               {saving ? 'Updating...' : 'Update Password'}
             </button>
           </form>

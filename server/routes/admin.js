@@ -108,6 +108,9 @@ router.post('/students', async (req, res) => {
     if (!name || !studentId || !password) {
       return res.status(400).json({ message: 'Full name, Student ID and password are required' });
     }
+    if (password.length < 6 || !/[a-zA-Z]/.test(password)) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters and contain at least 1 letter' });
+    }
     const exists = await User.findOne({ studentId });
     if (exists) return res.status(409).json({ message: 'Student ID already exists' });
     // Teacher can only add students to their own department

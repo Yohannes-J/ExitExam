@@ -2,6 +2,8 @@
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import Pagination from "../../components/Pagination";
+import PasswordInput from "../../components/PasswordInput";
+import { validatePassword } from "../../utils/password";
 
 const emptyStudent = { name: "", studentId: "", department: "", password: "" };
 const emptyAdmin = { name: "", email: "", department: "", role: "teacher" };
@@ -50,11 +52,13 @@ export default function AdminStudents() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const closeModal = () => { setModal(null); setSelected(null); setError(""); setNewAdminCreds(null); };
+  const closeModal = () => { setModal(null); setSelected(null); setError(""); setNewAdminCreds(null); setResetDone(null); };
   const showSuccess = (msg) => { setSuccess(msg); setTimeout(() => setSuccess(""), 4000); };
 
   const handleCreateStudent = async (e) => {
     e.preventDefault(); setError(""); setSaving(true);
+    const pwdErr = validatePassword(studentForm.password);
+    if (pwdErr) { setError(pwdErr); setSaving(false); return; }
     try {
       await api.post("/admin/students", studentForm);
       showSuccess("Student created successfully");
@@ -86,15 +90,18 @@ export default function AdminStudents() {
     finally { setSaving(false); }
   };
 
+  const [resetDone, setResetDone] = useState(null); // { name, password } after successful reset
+
   const handleReset = async (e) => {
     e.preventDefault(); setError("");
-    if (resetPwd.password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    const pwdErr = validatePassword(resetPwd.password);
+    if (pwdErr) { setError(pwdErr); return; }
     if (resetPwd.password !== resetPwd.confirm) { setError("Passwords do not match"); return; }
     setSaving(true);
     try {
       await api.put("/admin/students/" + selected._id, { password: resetPwd.password });
-      showSuccess("Password reset for " + selected.name);
-      closeModal();
+      // Show the new password clearly so admin can share it
+      setResetDone({ name: selected.name, password: resetPwd.password, id: selected.studentId || selected.email });
     } catch (err) { setError(err.response?.data?.message || "Failed to reset password"); }
     finally { setSaving(false); }
   };
@@ -303,9 +310,12 @@ export default function AdminStudents() {
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                 <input value={studentForm.department} onChange={(e) => setStudentForm({ ...studentForm, department: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Computer Science" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                <input required type="password" value={studentForm.password} onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Min 6 characters" minLength={6} /></div>
+              <PasswordInput
+                label="Password"
+                required
+                value={studentForm.password}
+                onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
+              />
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={closeModal} className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
                 <button type="submit" disabled={saving} className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-2.5 rounded-lg transition font-semibold text-sm">
@@ -378,28 +388,53 @@ export default function AdminStudents() {
       {modal === "reset" && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-xl shrink-0">🔑</div>
-              <div><h2 className="text-lg font-bold text-gray-800">Reset Password</h2>
-                <p className="text-sm text-gray-500">for <strong>{selected?.name}</strong></p></div>
-            </div>
-            {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">⚠️ {error}</div>}
-            <form onSubmit={handleReset} className="space-y-4">
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">New Password *</label>
-                <input required type="password" value={resetPwd.password} onChange={(e) => setResetPwd({ ...resetPwd, password: e.target.value })}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm" placeholder="Min 6 characters" minLength={6} /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
-                <input required type="password" value={resetPwd.confirm} onChange={(e) => setResetPwd({ ...resetPwd, confirm: e.target.value })}
-                  className={"w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-sm " + (resetPwd.confirm && resetPwd.password !== resetPwd.confirm ? "border-red-300 focus:ring-red-300 bg-red-50" : resetPwd.confirm ? "border-green-300 focus:ring-green-300 bg-green-50" : "border-gray-300 focus:ring-yellow-400")}
-                  placeholder="Repeat new password" />
-                {resetPwd.confirm && <p className={"text-xs mt-1 " + (resetPwd.password !== resetPwd.confirm ? "text-red-500" : "text-green-600")}>{resetPwd.password !== resetPwd.confirm ? "Passwords do not match" : "✓ Passwords match"}</p>}
+            {resetDone ? (
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl mx-auto mb-4">✓</div>
+                <h2 className="text-lg font-bold text-gray-800 mb-1">Password Reset!</h2>
+                <p className="text-sm text-gray-500 mb-5">Share these credentials with <strong>{resetDone.name}</strong></p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-left space-y-3 mb-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-gray-400 shrink-0">Login ID</span>
+                    <span className="font-mono font-semibold text-gray-800 text-sm">{resetDone.id}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-gray-400 shrink-0">New Password</span>
+                    <span className="font-mono font-bold text-indigo-700 text-lg tracking-widest">{resetDone.password}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-5 text-left">
+                  ⚠️ Ask <strong>{resetDone.name}</strong> to log in with this password and change it from their Profile page.
+                </p>
+                <button onClick={closeModal} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold text-sm transition">Done</button>
               </div>
-              <div className="flex gap-3 pt-1">
-                <button type="button" onClick={closeModal} className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
-                <button type="submit" disabled={saving} className="flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 text-white py-2.5 rounded-lg transition font-semibold text-sm">
-                  {saving ? "Resetting..." : "Reset Password"}</button>
-              </div>
-            </form>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-xl shrink-0">🔑</div>
+                  <div><h2 className="text-lg font-bold text-gray-800">Reset Password</h2>
+                    <p className="text-sm text-gray-500">for <strong>{selected?.name}</strong></p></div>
+                </div>
+                {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">⚠️ {error}</div>}
+                <form onSubmit={handleReset} className="space-y-4">
+                  <PasswordInput label="New Password" value={resetPwd.password}
+                    onChange={(e) => setResetPwd({ ...resetPwd, password: e.target.value })} />
+                  <PasswordInput label="Confirm Password" showStrength={false} hint=""
+                    value={resetPwd.confirm} placeholder="Repeat new password"
+                    onChange={(e) => setResetPwd({ ...resetPwd, confirm: e.target.value })} />
+                  {resetPwd.confirm && (
+                    <p className={`text-xs -mt-2 ${resetPwd.password !== resetPwd.confirm ? 'text-red-500' : 'text-green-600'}`}>
+                      {resetPwd.password !== resetPwd.confirm ? 'Passwords do not match' : '✓ Passwords match'}
+                    </p>
+                  )}
+                  <div className="flex gap-3 pt-1">
+                    <button type="button" onClick={closeModal} className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium text-sm">Cancel</button>
+                    <button type="submit" disabled={saving} className="flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 text-white py-2.5 rounded-lg transition font-semibold text-sm">
+                      {saving ? "Resetting..." : "Reset Password"}</button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
