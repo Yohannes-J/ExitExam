@@ -18,6 +18,8 @@ export default function AdminReports() {
   const [selectedExam, setSelectedExam] = useState("all");
   const [filter, setFilter] = useState("all");
   const [activeDept, setActiveDept] = useState('all'); // dept tab for teachers
+  const [deptView, setDeptView] = useState("all"); // "all" | "departments" for admin
+  const [deptDrilldown, setDeptDrilldown] = useState(null); // dept name when drilled in
   const [checked, setChecked] = useState(new Set());
 
   useEffect(() => {
@@ -30,7 +32,8 @@ export default function AdminReports() {
     const matchExam = selectedExam === "all" || r.exam?._id === selectedExam;
     const matchFilter = filter === "all" || (filter === "passed" ? r.passed : !r.passed);
     const matchDept = !isTeacher || activeDept === 'all' || r.student?.department === activeDept;
-    return matchExam && matchFilter && matchDept;
+    const matchDrilldown = !deptDrilldown || r.student?.department === deptDrilldown;
+    return matchExam && matchFilter && matchDept && matchDrilldown;
   });
 
   // When filters change, clear selection
@@ -125,7 +128,19 @@ export default function AdminReports() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Reports</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              {deptDrilldown ? (
+                <span className="flex items-center gap-2">
+                  <button onClick={() => { setDeptDrilldown(null); setChecked(new Set()); }}
+                    className="text-gray-400 hover:text-indigo-600 transition">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  {deptDrilldown}
+                </span>
+              ) : "Reports"}
+            </h1>
             <p className="text-sm text-gray-500 mt-0.5">
               {checked.size > 0
                 ? `${checked.size} student${checked.size !== 1 ? "s" : ""} selected`
@@ -133,6 +148,19 @@ export default function AdminReports() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {/* Dept view toggle — admin only, not when teacher tabs are shown */}
+            {!isTeacher && !deptDrilldown && (
+              <div className="flex bg-gray-100 p-0.5 rounded-lg">
+                <button onClick={() => { setDeptView("all"); setDeptDrilldown(null); setChecked(new Set()); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${deptView === "all" ? "bg-white shadow text-indigo-700" : "text-gray-500 hover:text-gray-700"}`}>
+                  ☰ All
+                </button>
+                <button onClick={() => { setDeptView("departments"); setDeptDrilldown(null); setChecked(new Set()); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${deptView === "departments" ? "bg-white shadow text-indigo-700" : "text-gray-500 hover:text-gray-700"}`}>
+                  🏛 By Dept
+                </button>
+              </div>
+            )}
             {checked.size > 0 && (
               <button onClick={() => setChecked(new Set())}
                 className="flex items-center gap-1.5 border border-gray-300 text-gray-600 hover:bg-gray-50 px-3 py-2 rounded-lg text-sm font-medium transition">
@@ -149,6 +177,46 @@ export default function AdminReports() {
             </button>
           </div>
         </div>
+
+        {/* Dept cards view — admin only */}
+        {!isTeacher && deptView === "departments" && !deptDrilldown && (() => {
+          const deptMap = {};
+          results.forEach(r => {
+            const d = r.student?.department;
+            if (d) {
+              if (!deptMap[d]) deptMap[d] = { total: 0, passed: 0 };
+              deptMap[d].total++;
+              if (r.passed) deptMap[d].passed++;
+            }
+          });
+          const depts = Object.entries(deptMap).sort(([a], [b]) => a.localeCompare(b));
+          return depts.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-2xl shadow-sm text-gray-400 mb-5">
+              <div className="text-5xl mb-3">📊</div>
+              <p>No results with department data yet</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+              {depts.map(([dept, stat]) => (
+                <button key={dept} onClick={() => { setDeptDrilldown(dept); setChecked(new Set()); }}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-300 hover:shadow-md transition p-5 text-left group">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mb-3 group-hover:bg-indigo-600 group-hover:text-white transition">📊</div>
+                  <h3 className="font-bold text-gray-800 mb-2">{dept}</h3>
+                  <div className="flex gap-3 text-xs mb-2">
+                    <span className="text-gray-500">{stat.total} submissions</span>
+                    <span className="text-green-600 font-semibold">{Math.round((stat.passed / stat.total) * 100)}% pass rate</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-400 rounded-full" style={{ width: `${Math.round((stat.passed / stat.total) * 100)}%` }} />
+                  </div>
+                  <div className="mt-3 flex items-center gap-1 text-indigo-600 text-xs font-medium">
+                    View & export <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </div>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">

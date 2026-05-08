@@ -10,6 +10,8 @@ export default function AdminResults() {
   const [deleting, setDeleting] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
   const [success, setSuccess] = useState("");
+  const [viewMode, setViewMode] = useState("all"); // "all" | "departments"
+  const [activeDept, setActiveDept] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +39,8 @@ export default function AdminResults() {
       r.student?.studentId?.toLowerCase().includes(search.toLowerCase()) ||
       r.exam?.title?.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || (filter === "passed" ? r.passed : !r.passed);
-    return matchSearch && matchFilter;
+    const matchDept = !activeDept || r.student?.department === activeDept;
+    return matchSearch && matchFilter && matchDept;
   });
 
   const formatDate = (d) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -47,7 +50,30 @@ export default function AdminResults() {
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-7xl mx-auto px-4 xl:px-8">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-5">All Results</h1>
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+            {activeDept ? (
+              <span className="flex items-center gap-2">
+                <button onClick={() => setActiveDept(null)} className="text-gray-400 hover:text-indigo-600 transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                {activeDept}
+              </span>
+            ) : "All Results"}
+          </h1>
+          <div className="flex bg-gray-100 p-0.5 rounded-lg">
+            <button onClick={() => { setViewMode("all"); setActiveDept(null); }}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${viewMode === "all" ? "bg-white shadow text-indigo-700" : "text-gray-500 hover:text-gray-700"}`}>
+              ☰ All
+            </button>
+            <button onClick={() => { setViewMode("departments"); setActiveDept(null); }}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${viewMode === "departments" ? "bg-white shadow text-indigo-700" : "text-gray-500 hover:text-gray-700"}`}>
+              🏛 By Dept
+            </button>
+          </div>
+        </div>
 
         {success && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
@@ -55,6 +81,49 @@ export default function AdminResults() {
           </div>
         )}
 
+        {/* Department cards view */}
+        {viewMode === "departments" && !activeDept && (() => {
+          const deptMap = {};
+          results.forEach(r => {
+            const d = r.student?.department;
+            if (d) {
+              if (!deptMap[d]) deptMap[d] = { total: 0, passed: 0 };
+              deptMap[d].total++;
+              if (r.passed) deptMap[d].passed++;
+            }
+          });
+          const depts = Object.entries(deptMap).sort(([a], [b]) => a.localeCompare(b));
+          return depts.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-2xl shadow-sm text-gray-400 mb-5">
+              <div className="text-5xl mb-3">📊</div>
+              <p>No results with department data yet</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-5">
+              {depts.map(([dept, stat]) => (
+                <button key={dept} onClick={() => setActiveDept(dept)}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-300 hover:shadow-md transition p-5 text-left group">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mb-3 group-hover:bg-indigo-600 group-hover:text-white transition">📊</div>
+                  <h3 className="font-bold text-gray-800 mb-2">{dept}</h3>
+                  <div className="flex gap-3 text-xs">
+                    <span className="text-gray-500">{stat.total} submissions</span>
+                    <span className="text-green-600 font-semibold">{Math.round((stat.passed / stat.total) * 100)}% pass</span>
+                  </div>
+                  <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-400 rounded-full" style={{ width: `${Math.round((stat.passed / stat.total) * 100)}%` }} />
+                  </div>
+                  <div className="mt-3 flex items-center gap-1 text-indigo-600 text-xs font-medium">
+                    View results <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </div>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* Normal view — show when "all" mode OR drilled into a dept */}
+        {(viewMode === "all" || activeDept) && (
+          <>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5">
           {[
             { label: "Total", value: results.length, color: "indigo" },
@@ -194,6 +263,8 @@ export default function AdminResults() {
             <div className="text-center py-8 text-gray-400 text-sm">No results found</div>
           )}
         </div>
+          </>
+        )}
       </div>
     </div>
   );
