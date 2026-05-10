@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/axios';
 import SchoolDeptSelect from '../../components/SchoolDeptSelect';
 import { useAuth } from '../../context/AuthContext';
+import QuestionUploader from '../../components/QuestionUploader';
 
 const emptyQuestion = () => ({ text: '', code: '', type: 'mcq', options: ['', '', '', ''], correctIndex: 0, correctText: '', points: 1 });
 
@@ -52,6 +53,10 @@ export default function ExamForm() {
     ...prev,
     questions: [...prev.questions, { ...emptyQuestion(), type: newQType }],
   }));
+
+  const handleImportQuestions = (imported) => {
+    setForm(prev => ({ ...prev, questions: [...prev.questions, ...imported] }));
+  };
   const removeQuestion = (i) => setForm((prev) => ({ ...prev, questions: prev.questions.filter((_, idx) => idx !== i) }));
 
   const handleSubmit = async (e) => {
@@ -218,7 +223,8 @@ export default function ExamForm() {
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Questions ({form.questions.length})</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <QuestionUploader onImport={handleImportQuestions} />
                 <select
                   value={newQType}
                   onChange={(e) => setNewQType(e.target.value)}
