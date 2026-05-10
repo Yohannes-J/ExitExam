@@ -97,26 +97,7 @@ export default function QuestionUploader({ onImport }) {
       )}
 
       {/* Format hint */}
-      <details className="mt-2">
-        <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600">
-          📋 Expected document format
-        </summary>
-        <pre className="mt-2 text-xs bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-600 overflow-x-auto whitespace-pre-wrap">{`1. What is the capital of Ethiopia?
-A) Nairobi
-B) Addis Ababa
-C) Cairo
-D) Lagos
-Answer: B
-
-2. Is the sky blue?
-Answer: True
-
-3. Explain recursion briefly.
-Answer: A function that calls itself
-
-4. Write an essay about AI.
-(no answer needed)`}</pre>
-      </details>
+      <p className="mt-1.5 text-xs text-gray-400">Supports PDF, Word (.docx), or plain text (.txt)</p>
 
       {/* Preview modal */}
       {preview && (
