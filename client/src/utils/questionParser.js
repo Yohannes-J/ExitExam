@@ -28,8 +28,10 @@ export function parseQuestionsFromText(rawText) {
 
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const questions = [];
+  const seenNumbers = new Set(); // prevent duplicate question numbers
 
   let currentQ = null;
+  let currentQNum = null;
   let currentOptions = [];
   let answerRaw = '';
 
@@ -73,11 +75,14 @@ export function parseQuestionsFromText(rawText) {
       /^Instruction:/i.test(line) ||
       /^Program:/i.test(line) ||
       /^Exam Type:/i.test(line) ||
+      /^Exam Item:/i.test(line) ||
+      /^Number of Questions:/i.test(line) ||
       /^Time Allowed:/i.test(line) ||
       /^St\.Name/i.test(line) ||
       /^IDNo/i.test(line) ||
       /^May \d+/i.test(line) ||
       /^Jimma University/i.test(line) ||
+      /^\d+\s*\|\s*\d+$/.test(line) || // page numbers like "7 | 28"
       line.length < 2
     ) continue;
 
@@ -96,8 +101,13 @@ export function parseQuestionsFromText(rawText) {
     }
 
     // Question number line: 1. text  or  1) text
-    const qMatch = line.match(/^(\d+)[.)]\s+(.+)/);
+    // Must have at least 10 chars of content to avoid picking up stray numbers
+    const qMatch = line.match(/^(\d+)[.)]\s+(.{10,})/);
     if (qMatch) {
+      const qNum = parseInt(qMatch[1]);
+      // Skip if we've already seen this question number (duplicate from page headers)
+      if (seenNumbers.has(qNum)) continue;
+      seenNumbers.add(qNum);
       // Save previous question
       saveQuestion();
       // Start new question
