@@ -1,112 +1,129 @@
 /**
- * Parse plain text into question objects.
+ * Parse plain text extracted from PDF/Word into question objects.
  *
- * Supported formats:
- *
- * MCQ:
+ * Handles real-world exam formats like:
  *   1. Question text?
- *   A) Option A   or   A. Option A
- *   B) Option B
- *   C) Option C
- *   D) Option D
- *   Answer: B   or   Correct: B
- *
- * True/False:
- *   1. Statement text?
- *   Answer: True   or   Answer: False
- *
- * Short Answer:
- *   1. Question text?
- *   Answer: Expected answer text
- *   (when answer is not A/B/C/D and not True/False)
- *
- * Essay:
- *   1. Question text?
- *   (no answer line — or Answer: [essay])
+ *   A. Option A   or   A) Option A
+ *   B. Option B
+ *   C. Option C
+ *   D. Option D
+ *   ANSWER: B   or   Answer: B.
  */
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
 
-function detectType(options, answerRaw) {
-  if (!answerRaw) return 'essay';
-  const ans = answerRaw.trim().toUpperCase();
-  if (ans === 'TRUE' || ans === 'FALSE') return 'truefalse';
-  if (OPTION_LABELS.includes(ans) && options.length >= 2) return 'mcq';
-  if (options.length === 0) return 'short';
-  return 'mcq';
-}
+export function parseQuestionsFromText(rawText) {
+  if (!rawText || !rawText.trim()) return [];
 
-export function parseQuestionsFromText(text) {
+  // Normalize: collapse multiple spaces, fix common PDF extraction issues
+  let text = rawText
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    // Normalize option lines: ensure A. / A) are on their own line
+    .replace(/([A-D][.)]\s)/g, '\n$1')
+    // Normalize ANSWER lines
+    .replace(/(ANSWER|Answer|answer)\s*:/g, '\nANSWER:')
+    // Split run-together question numbers: "...text D. option ANSWER: X 2. Next question"
+    .replace(/(\d+)\.\s+(?=[A-Z])/g, '\n$1. ');
+
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const questions = [];
-  if (!text || !text.trim()) return questions;
 
-  // Split by question numbers: lines starting with digit(s) followed by . or )
-  const blocks = text.split(/\n(?=\s*\d+[\.\)]\s)/);
+  let currentQ = null;
+  let currentOptions = [];
+  let answerRaw = '';
 
-  for (const block of blocks) {
-    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length === 0) continue;
+  const saveQuestion = () => {
+    if (!currentQ || !currentQ.trim()) return;
 
-    // First line = question number + text
-    const firstLine = lines[0].replace(/^\d+[\.\)]\s*/, '').trim();
-    if (!firstLine) continue;
+    // Clean up question text — remove leading number
+    const qText = currentQ.replace(/^\d+[\.\)]\s*/, '').trim();
+    if (!qText) return;
 
-    const options = [];
-    let answerRaw = '';
-    let questionText = firstLine;
-    let codeLines = [];
-    let inCode = false;
-
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-
-      // Code block markers
-      if (line.startsWith('```')) { inCode = !inCode; continue; }
-      if (inCode) { codeLines.push(line); continue; }
-
-      // Option line: A) ... or A. ...
-      const optMatch = line.match(/^([A-Ea-e])[\.\)]\s*(.+)/);
-      if (optMatch) {
-        options.push(optMatch[2].trim());
-        continue;
-      }
-
-      // Answer line
-      const ansMatch = line.match(/^(?:answer|correct|ans)[\s:]+(.+)/i);
-      if (ansMatch) {
-        answerRaw = ansMatch[1].trim();
-        continue;
-      }
-
-      // Continuation of question text (before options)
-      if (options.length === 0 && !answerRaw) {
-        questionText += ' ' + line;
-      }
-    }
-
-    const type = detectType(options, answerRaw);
+    const type = detectType(currentOptions, answerRaw);
     const q = {
-      text: questionText.trim(),
-      code: codeLines.join('\n'),
+      text: qText,
+      code: '',
       type,
-      options: type === 'mcq' ? (options.length >= 2 ? options : ['', '', '', '']) : [],
+      options: [],
       correctIndex: 0,
       correctText: '',
       points: 1,
     };
 
-    if (type === 'mcq' && answerRaw) {
-      const idx = OPTION_LABELS.indexOf(answerRaw.toUpperCase());
+    if (type === 'mcq') {
+      q.options = currentOptions.length >= 2 ? currentOptions : ['', '', '', ''];
+      const idx = OPTION_LABELS.indexOf(answerRaw.trim().toUpperCase().replace(/\.$/, ''));
       q.correctIndex = idx >= 0 ? idx : 0;
     } else if (type === 'truefalse') {
       q.options = ['True', 'False'];
-      q.correctIndex = answerRaw.trim().toUpperCase() === 'TRUE' ? 0 : 1;
+      q.correctIndex = answerRaw.trim().toUpperCase().startsWith('T') ? 0 : 1;
     } else if (type === 'short') {
-      q.correctText = answerRaw;
+      q.correctText = answerRaw.trim();
     }
 
-    if (q.text) questions.push(q);
+    questions.push(q);
+  };
+
+  for (const line of lines) {
+    // Skip header/footer lines
+    if (
+      /^S\s*o\s*f\s*t\s*w\s*a\s*r\s*e/.test(line) || // spaced-out header
+      /^Page\s+\d+/i.test(line) ||
+      /^Instruction:/i.test(line) ||
+      /^Program:/i.test(line) ||
+      /^Exam Type:/i.test(line) ||
+      /^Time Allowed:/i.test(line) ||
+      /^St\.Name/i.test(line) ||
+      /^IDNo/i.test(line) ||
+      /^May \d+/i.test(line) ||
+      /^Jimma University/i.test(line) ||
+      line.length < 2
+    ) continue;
+
+    // ANSWER line
+    const ansMatch = line.match(/^(?:ANSWER|Answer|ans(?:wer)?)\s*[:\-]\s*(.+)/i);
+    if (ansMatch) {
+      answerRaw = ansMatch[1].trim().replace(/\.$/, '');
+      continue;
+    }
+
+    // Option line: A. text  or  A) text
+    const optMatch = line.match(/^([A-Ea-e])[.)]\s+(.+)/);
+    if (optMatch) {
+      currentOptions.push(optMatch[2].trim());
+      continue;
+    }
+
+    // Question number line: 1. text  or  1) text
+    const qMatch = line.match(/^(\d+)[.)]\s+(.+)/);
+    if (qMatch) {
+      // Save previous question
+      saveQuestion();
+      // Start new question
+      currentQ = line;
+      currentOptions = [];
+      answerRaw = '';
+      continue;
+    }
+
+    // Continuation of question text (before options appear)
+    if (currentQ && currentOptions.length === 0 && !answerRaw) {
+      currentQ += ' ' + line;
+    }
   }
 
+  // Save last question
+  saveQuestion();
+
   return questions;
+}
+
+function detectType(options, answerRaw) {
+  if (!answerRaw) return options.length >= 2 ? 'mcq' : 'essay';
+  const ans = answerRaw.trim().toUpperCase().replace(/\.$/, '');
+  if (ans === 'TRUE' || ans === 'FALSE') return 'truefalse';
+  if (OPTION_LABELS.includes(ans) && options.length >= 2) return 'mcq';
+  if (options.length === 0) return 'short';
+  return 'mcq';
 }
