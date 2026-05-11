@@ -22,23 +22,19 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/schools', schoolRoutes);
 
-// Serve React frontend in production
 const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));
 
-// All non-API routes → serve index.html (React Router handles them)
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 
-// Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 
 mongoose

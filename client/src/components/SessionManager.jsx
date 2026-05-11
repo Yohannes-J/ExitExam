@@ -2,9 +2,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const SESSION_DURATION = 24 * 60 * 60 * 1000; // 1 day in ms
-const WARN_BEFORE    = 5  * 60 * 1000;         // warn 5 minutes before expiry
-const CHECK_INTERVAL = 30 * 1000;               // check every 30 seconds
+const SESSION_DURATION = 24 * 60 * 60 * 1000; 
+const WARN_BEFORE    = 5  * 60 * 1000;         
+const CHECK_INTERVAL = 30 * 1000;               
 
 export default function SessionManager() {
   const { user, logout } = useAuth();
@@ -31,7 +31,7 @@ export default function SessionManager() {
   useEffect(() => {
     if (!user) return;
 
-    // Set session start if not already set
+    
     if (!localStorage.getItem('sessionStart')) {
       localStorage.setItem('sessionStart', Date.now().toString());
     }
@@ -50,7 +50,7 @@ export default function SessionManager() {
         setWarning(true);
         setSecondsLeft(Math.floor(remaining / 1000));
 
-        // Start per-second countdown
+        
         clearInterval(countdownRef.current);
         countdownRef.current = setInterval(() => {
           const s = parseInt(localStorage.getItem('sessionStart') || '0', 10);
@@ -64,7 +64,7 @@ export default function SessionManager() {
       }
     };
 
-    check(); // run immediately
+    check(); 
     intervalRef.current = setInterval(check, CHECK_INTERVAL);
 
     return () => {
@@ -73,7 +73,7 @@ export default function SessionManager() {
     };
   }, [user, doLogout, warning]);
 
-  // Clear session start on logout
+  
   useEffect(() => {
     if (!user) {
       localStorage.removeItem('sessionStart');
@@ -104,7 +104,7 @@ export default function SessionManager() {
                 {fmt(secondsLeft)}
               </span>
             </p>
-            {/* Progress bar */}
+            {}
             <div className="w-full h-1.5 bg-gray-100 rounded-full mt-2 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-1000 ${secondsLeft < 60 ? 'bg-red-500' : 'bg-yellow-400'}`}

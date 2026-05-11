@@ -47,9 +47,9 @@ export default function ResultDetail() {
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-4xl mx-auto xl:px-8">
 
-        {/* Result hero card */}
+        {}
         <div className={`rounded-2xl shadow-lg mb-6 overflow-hidden`}>
-          {/* Top accent bar */}
+          {}
           <div className={`h-1.5 w-full ${result.passed ? 'bg-gradient-to-r from-emerald-400 to-green-500' : 'bg-gradient-to-r from-red-400 to-rose-500'}`} />
 
           <div className={`p-6 sm:p-8 ${result.passed ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-red-600 to-rose-700'} text-white`}>
@@ -70,7 +70,7 @@ export default function ResultDetail() {
               </div>
             </div>
 
-            {/* Stats row */}
+            {}
             <div className="grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-white/20">
               {[
                 { label: 'Score', value: `${result.score}/${result.totalPoints}` },
@@ -86,7 +86,7 @@ export default function ResultDetail() {
           </div>
         </div>
 
-        {/* Summary bar */}
+        {}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
             { label: 'Total Questions', value: exam.questions?.length || 0, color: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
@@ -100,14 +100,14 @@ export default function ResultDetail() {
           ))}
         </div>
 
-        {/* Answer Review — modern table */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-bold text-gray-800 text-base sm:text-lg">Answer Review</h2>
             <span className="text-xs text-gray-400">{exam.questions?.length} questions</span>
           </div>
 
-          {/* Desktop table */}
+          {}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -127,14 +127,14 @@ export default function ResultDetail() {
                     <tr key={i} className={`transition ${isCorrect ? 'hover:bg-gray-50/80' : 'bg-red-50/20 hover:bg-red-50/40'}`}>
                       <td className="px-5 py-4 text-gray-400 font-mono text-xs align-top">{i + 1}</td>
                       <td className="px-5 py-4">
-                        {/* Question text */}
+                        {}
                         <p className="text-gray-800 font-medium text-sm leading-snug mb-3">{q.text}</p>
                         {q.code && (
                           <pre className="mb-3 bg-gray-900 text-green-400 rounded-lg p-2.5 text-xs font-mono overflow-x-auto whitespace-pre">
                             {q.code}
                           </pre>
                         )}
-                    {/* All options for MCQ/TrueFalse */}
+                    {}
                         {(q.type === 'mcq' || !q.type || q.type === 'truefalse') && (
                           <div className="space-y-1.5">
                             {(q.type === 'truefalse' ? ['True', 'False'] : q.options).map((opt, j) => {
@@ -167,7 +167,7 @@ export default function ResultDetail() {
                           </div>
                         )}
 
-                        {/* Short / Essay answer */}
+                        {}
                         {(q.type === 'short' || q.type === 'essay') && (
                           <div className="space-y-2">
                             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
@@ -204,7 +204,7 @@ export default function ResultDetail() {
             </table>
           </div>
 
-          {/* Mobile cards */}
+          {}
           <div className="sm:hidden divide-y divide-gray-50">
             {exam.questions?.map((q, i) => {
               const ans = result.answers[i];
@@ -257,7 +257,7 @@ export default function ResultDetail() {
           </div>
         </div>
 
-        {/* Action buttons */}
+        {}
         <div className="flex flex-col sm:flex-row gap-3">
           <button onClick={() => navigate('/dashboard')}
             className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition text-sm shadow-sm shadow-indigo-200">

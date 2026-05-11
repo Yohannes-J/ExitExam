@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="bg-gray-900/95 backdrop-blur-sm text-white mt-auto border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 xl:px-8 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-          {/* Brand */}
+          {}
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-2 font-bold text-lg mb-1">
               <span className="text-indigo-400">🎓</span>
@@ -15,7 +15,7 @@ export default function Footer() {
             <p className="text-gray-500 text-xs">Empowering students through digital assessment</p>
           </div>
 
-          {/* Contact */}
+          {}
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-8">
             <a href="mailto:yohannesjohn126@gmail.com"
               className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition group">
@@ -30,7 +30,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Divider + copyright */}
+        {}
         <div className="border-t border-white/5 mt-6 pt-5 text-center text-xs text-gray-500 font-semibold">
           © {year} ExitExam Platform. All rights reserved.
         </div>

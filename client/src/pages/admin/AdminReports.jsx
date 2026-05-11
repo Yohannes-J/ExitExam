@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import api from "../../api/axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -17,9 +17,9 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(true);
   const [selectedExam, setSelectedExam] = useState("all");
   const [filter, setFilter] = useState("all");
-  const [activeDept, setActiveDept] = useState('all'); // dept tab for teachers
-  const [deptView, setDeptView] = useState("all"); // "all" | "departments" for admin
-  const [deptDrilldown, setDeptDrilldown] = useState(null); // dept name when drilled in
+  const [activeDept, setActiveDept] = useState('all'); 
+  const [deptView, setDeptView] = useState("all"); 
+  const [deptDrilldown, setDeptDrilldown] = useState(null); 
   const [checked, setChecked] = useState(new Set());
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function AdminReports() {
     return matchExam && matchFilter && matchDept && matchDrilldown;
   });
 
-  // When filters change, clear selection
+  
   useEffect(() => { setChecked(new Set()); }, [selectedExam, filter, activeDept]);
 
   const allChecked = filtered.length > 0 && filtered.every(r => checked.has(r._id));
@@ -58,7 +58,7 @@ export default function AdminReports() {
     });
   };
 
-  // Rows to export: checked ones, or all filtered if none checked
+  
   const exportRows = filtered.filter(r => checked.size === 0 || checked.has(r._id));
 
   const formatDate = (d) => new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
@@ -125,7 +125,7 @@ export default function AdminReports() {
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-7xl mx-auto px-4 xl:px-8">
 
-        {/* Header */}
+        {}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
@@ -148,7 +148,7 @@ export default function AdminReports() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {/* Dept view toggle — admin only, not when teacher tabs are shown */}
+            {}
             {!isTeacher && !deptDrilldown && (
               <div className="flex bg-gray-100 p-0.5 rounded-lg">
                 <button onClick={() => { setDeptView("all"); setDeptDrilldown(null); setChecked(new Set()); }}
@@ -178,7 +178,7 @@ export default function AdminReports() {
           </div>
         </div>
 
-        {/* Dept cards view — admin only */}
+        {}
         {!isTeacher && deptView === "departments" && !deptDrilldown && (() => {
           const deptMap = {};
           results.forEach(r => {
@@ -218,7 +218,7 @@ export default function AdminReports() {
           );
         })()}
 
-        {/* Summary */}
+        {}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           {[
             { label: "Total", value: filtered.length, color: "indigo" },
@@ -233,7 +233,7 @@ export default function AdminReports() {
           ))}
         </div>
 
-        {/* Department tabs for teachers */}
+        {}
         {isTeacher && myDepts.length > 1 && (
           <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-xl w-fit flex-wrap">
             <button onClick={() => setActiveDept('all')}
@@ -254,7 +254,7 @@ export default function AdminReports() {
           </div>
         )}
 
-        {/* Filters */}
+        {}
         <div className="flex flex-col sm:flex-row gap-2 mb-4">
           <select value={selectedExam} onChange={(e) => setSelectedExam(e.target.value)}
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
@@ -275,7 +275,7 @@ export default function AdminReports() {
           </div>
         ) : (
           <>
-            {/* Desktop table */}
+            {}
             <div className="hidden sm:block bg-white rounded-2xl shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-indigo-600 text-white">
@@ -333,9 +333,9 @@ export default function AdminReports() {
               </table>
             </div>
 
-            {/* Mobile cards */}
+            {}
             <div className="sm:hidden space-y-3">
-              {/* Select all mobile */}
+              {}
               {filtered.length > 0 && (
                 <div className="flex items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100">
                   <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">

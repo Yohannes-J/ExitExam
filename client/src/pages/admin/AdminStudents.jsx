@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import Pagination from "../../components/Pagination";
@@ -16,13 +16,13 @@ export default function AdminStudents() {
   const { user: currentUser } = useAuth();
   const isSuperAdmin = currentUser?.role === 'admin';
   const [tab, setTab] = useState("students");
-  const [viewMode, setViewMode] = useState("table"); // "table" | "departments"
-  const [activeDept, setActiveDept] = useState(null); // dept name when drilled in
+  const [viewMode, setViewMode] = useState("table"); 
+  const [activeDept, setActiveDept] = useState(null); 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [sortAZ, setSortAZ] = useState(true); // true = A→Z, false = Z→A
+  const [sortAZ, setSortAZ] = useState(true); 
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [studentForm, setStudentForm] = useState(emptyStudent);
@@ -51,7 +51,7 @@ export default function AdminStudents() {
     u.department?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Reset to page 1 when tab or search changes
+  
   useEffect(() => { setPage(1); }, [tab, search]);
 
   const sorted = [...filtered].sort((a, b) =>
@@ -106,7 +106,7 @@ export default function AdminStudents() {
     finally { setSaving(false); }
   };
 
-  const [resetDone, setResetDone] = useState(null); // { name, password } after successful reset
+  const [resetDone, setResetDone] = useState(null); 
 
   const handleReset = async (e) => {
     e.preventDefault(); setError("");
@@ -116,7 +116,7 @@ export default function AdminStudents() {
     setSaving(true);
     try {
       await api.put("/admin/students/" + selected._id, { password: resetPwd.password });
-      // Show the new password clearly so admin can share it
+      
       setResetDone({ name: selected.name, password: resetPwd.password, id: selected.studentId || selected.email });
     } catch (err) { setError(err.response?.data?.message || "Failed to reset password"); }
     finally { setSaving(false); }
@@ -175,7 +175,7 @@ export default function AdminStudents() {
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{students.length} students · {admins.length} admins</p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {/* View toggle — only on Students tab */}
+            {}
             {tab === "students" && (
               <div className="flex bg-gray-100 p-0.5 rounded-lg">
                 <button onClick={() => { setViewMode("table"); setActiveDept(null); }}
@@ -236,10 +236,10 @@ export default function AdminStudents() {
           </button>
         </div>
 
-        {/* Department view for students tab */}
+        {}
         {tab === "students" && viewMode === "departments" && (
           activeDept ? (
-            // Drilled into a department
+            
             <div>
               <button onClick={() => setActiveDept(null)}
                 className="flex items-center gap-1.5 text-gray-500 hover:text-indigo-600 text-sm font-medium transition mb-4">
@@ -285,7 +285,7 @@ export default function AdminStudents() {
               </div>
             </div>
           ) : (
-            // Department cards
+            
             (() => {
               const deptMap = {};
               students.forEach(s => {
@@ -321,7 +321,7 @@ export default function AdminStudents() {
           )
         )}
 
-        {/* Normal table/card view */}
+        {}
         {(tab !== "students" || viewMode === "table") && (
           <>
         {loading ? (
@@ -428,7 +428,7 @@ export default function AdminStudents() {
           </>
         )}
 
-        {/* Pagination */}
+        {}
         {filtered.length > PAGE_SIZE && (
           <div>
             <p className="text-center text-xs text-gray-400 mt-4">
@@ -611,7 +611,7 @@ export default function AdminStudents() {
         </div>
       )}
 
-      {/* ── Edit Student Modal ── */}
+      {}
       {modal === "editStudent" && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
@@ -650,7 +650,7 @@ export default function AdminStudents() {
         </div>
       )}
 
-      {/* ── Edit Admin/Teacher Modal ── */}
+      {}
       {modal === "editAdmin" && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
@@ -673,7 +673,7 @@ export default function AdminStudents() {
                 <input required type="email" value={adminForm.email} onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
               </div>
-              {/* Departments — multi-select for teachers, hidden for admins */}
+              {}
               {adminForm.role === "teacher" ? (
                 <SchoolMultiDeptSelect
                   school={adminForm.school || ""}

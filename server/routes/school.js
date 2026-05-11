@@ -5,9 +5,6 @@ import { protect, adminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ── Public (authenticated) ──────────────────────────────────
-
-// GET /api/schools — all active schools
 router.get('/', protect, async (req, res) => {
   try {
     const schools = await School.find({ isActive: true }).sort({ name: 1 });
@@ -15,7 +12,6 @@ router.get('/', protect, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// GET /api/schools/:id/departments — departments for a school
 router.get('/:id/departments', protect, async (req, res) => {
   try {
     const depts = await Department.find({ school: req.params.id, isActive: true }).sort({ name: 1 });
@@ -23,9 +19,6 @@ router.get('/:id/departments', protect, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// ── Admin only ──────────────────────────────────────────────
-
-// POST /api/schools
 router.post('/', protect, adminOnly, async (req, res) => {
   try {
     const { name, code } = req.body;
@@ -38,7 +31,6 @@ router.post('/', protect, adminOnly, async (req, res) => {
   }
 });
 
-// PUT /api/schools/:id
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
     const school = await School.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -47,7 +39,6 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// DELETE /api/schools/:id
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
     await School.findByIdAndDelete(req.params.id);
@@ -56,7 +47,6 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// POST /api/schools/:id/departments
 router.post('/:id/departments', protect, adminOnly, async (req, res) => {
   try {
     const { name } = req.body;
@@ -69,7 +59,6 @@ router.post('/:id/departments', protect, adminOnly, async (req, res) => {
   }
 });
 
-// PUT /api/schools/departments/:deptId
 router.put('/departments/:deptId', protect, adminOnly, async (req, res) => {
   try {
     const dept = await Department.findByIdAndUpdate(req.params.deptId, req.body, { new: true });
@@ -78,7 +67,6 @@ router.put('/departments/:deptId', protect, adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// DELETE /api/schools/departments/:deptId
 router.delete('/departments/:deptId', protect, adminOnly, async (req, res) => {
   try {
     await Department.findByIdAndDelete(req.params.deptId);

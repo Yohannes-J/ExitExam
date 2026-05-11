@@ -8,19 +8,17 @@ const router = express.Router();
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-// POST /api/auth/register — DISABLED: only admin can create students
 router.post('/register', (req, res) => {
   res.status(403).json({ message: 'Registration is not open. Contact your administrator.' });
 });
 
-// POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
     const { studentId, password } = req.body;
     if (!studentId || !password) {
       return res.status(400).json({ message: 'Student ID and password are required' });
     }
-    // Find by studentId OR email (admin uses email)
+    
     const user = await User.findOne({
       $or: [{ studentId }, { email: studentId }],
     });
@@ -37,12 +35,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /api/auth/me
 router.get('/me', protect, (req, res) => {
   res.json({ user: req.user });
 });
 
-// PUT /api/auth/profile — update own profile (name, phone)
 router.put('/profile', protect, async (req, res) => {
   try {
     const { phone } = req.body;
@@ -55,7 +51,6 @@ router.put('/profile', protect, async (req, res) => {
   }
 });
 
-// PUT /api/auth/change-password
 router.put('/change-password', protect, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;

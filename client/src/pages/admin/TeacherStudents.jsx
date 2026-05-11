@@ -17,8 +17,8 @@ export default function TeacherStudents() {
   const [sortAZ, setSortAZ] = useState(true);
   const [page, setPage] = useState(1);
 
-  // Modals
-  const [modal, setModal] = useState(null); // 'edit' | 'reset' | 'delete'
+  
+  const [modal, setModal] = useState(null); 
   const [selected, setSelected] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', studentId: '', department: '' });
   const [resetPwd, setResetPwd] = useState({ password: '', confirm: '' });
@@ -100,7 +100,7 @@ export default function TeacherStudents() {
     finally { setSaving(false); }
   };
 
-  // ── Department cards ───────────────────────────────────────
+  
   if (!activeDept) {
     return (
       <div className="min-h-screen bg-gray-50 py-6 px-4">
@@ -142,7 +142,7 @@ export default function TeacherStudents() {
     );
   }
 
-  // ── Student list ───────────────────────────────────────────
+  
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-5xl mx-auto xl:px-8">
@@ -199,7 +199,7 @@ export default function TeacherStudents() {
           </div>
         ) : (
           <>
-            {/* Desktop table */}
+            {}
             <div className="hidden sm:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">
@@ -241,7 +241,7 @@ export default function TeacherStudents() {
               </table>
             </div>
 
-            {/* Mobile cards */}
+            {}
             <div className="sm:hidden space-y-3">
               {paginated.map((s, i) => (
                 <div key={s._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
@@ -279,7 +279,7 @@ export default function TeacherStudents() {
         )}
       </div>
 
-      {/* Edit Modal */}
+      {}
       {modal === 'edit' && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6">
@@ -307,7 +307,7 @@ export default function TeacherStudents() {
         </div>
       )}
 
-      {/* Reset Password Modal */}
+      {}
       {modal === 'reset' && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6">
@@ -354,7 +354,7 @@ export default function TeacherStudents() {
         </div>
       )}
 
-      {/* Delete Modal */}
+      {}
       {modal === 'delete' && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">

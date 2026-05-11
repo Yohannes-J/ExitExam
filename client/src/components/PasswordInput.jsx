@@ -37,7 +37,7 @@ export default function PasswordInput({
         </button>
       </div>
 
-      {/* Strength bar */}
+      {}
       {showStrength && value && cfg && (
         <div className="mt-1.5">
           <div className="h-1 bg-gray-100 rounded-full overflow-hidden">

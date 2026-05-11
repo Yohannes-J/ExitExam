@@ -3,13 +3,13 @@ import { parseQuestionsFromText } from '../utils/questionParser';
 
 export default function QuestionUploader({ onImport }) {
   const [parsing, setParsing] = useState(false);
-  const [preview, setPreview] = useState(null); // parsed questions before confirming
+  const [preview, setPreview] = useState(null); 
   const [error, setError] = useState('');
   const fileRef = useRef(null);
 
   const extractTextFromPDF = async (file) => {
     const pdfjsLib = await import('pdfjs-dist');
-    // Use the worker bundled with pdfjs-dist (no CDN needed)
+    
     pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
       'pdfjs-dist/build/pdf.worker.min.mjs',
       import.meta.url
@@ -77,7 +77,7 @@ export default function QuestionUploader({ onImport }) {
 
   return (
     <div>
-      {/* Upload button */}
+      {}
       <div className="flex items-center gap-2">
         <input ref={fileRef} type="file" accept=".pdf,.docx,.txt"
           onChange={e => handleFile(e.target.files[0])}
@@ -100,10 +100,10 @@ export default function QuestionUploader({ onImport }) {
         </div>
       )}
 
-      {/* Format hint */}
+      {}
       <p className="mt-1.5 text-xs text-gray-400">Supports PDF, Word (.docx), or plain text (.txt)</p>
 
-      {/* Preview modal */}
+      {}
       {preview && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-6 max-h-[85vh] flex flex-col">
@@ -115,7 +115,7 @@ export default function QuestionUploader({ onImport }) {
               <button onClick={() => setPreview(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
 
-            {/* Preview list */}
+            {}
             <div className="flex-1 overflow-y-auto space-y-3 mb-5 pr-1">
               {preview.map((q, i) => (
                 <div key={i} className="bg-gray-50 rounded-xl p-3 border border-gray-200">

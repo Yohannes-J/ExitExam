@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 
 export default function CountdownTimer({ durationSeconds, initialSeconds, onTimeUp, onTick }) {
-  // initialSeconds = resume from saved time, fallback to full duration
   const [timeLeft, setTimeLeft] = useState(initialSeconds ?? durationSeconds);
 
   const formatTime = (secs) => {

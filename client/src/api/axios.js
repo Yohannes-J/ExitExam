@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-// In production: same domain, use /api (Express serves both frontend and API)
-// In development: proxy via Vite to localhost:5000
 const baseURL = import.meta.env.PROD
   ? '/api'
   : 'http://localhost:5000/api';

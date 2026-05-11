@@ -9,7 +9,6 @@ const departmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Unique name per school
 departmentSchema.index({ name: 1, school: 1 }, { unique: true });
 
 export default mongoose.model('Department', departmentSchema);

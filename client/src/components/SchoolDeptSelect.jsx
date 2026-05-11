@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 
-/**
- * Two-step school → department selector.
- * Props:
- *   school, onSchoolChange  — controlled school id
- *   department, onDeptChange — controlled department name string
- *   required — bool
- *   disabled — bool (e.g. for teachers locked to their school)
- */
 export default function SchoolDeptSelect({
   school, onSchoolChange,
   department, onDeptChange,
@@ -36,7 +28,7 @@ export default function SchoolDeptSelect({
 
   return (
     <div className="space-y-3">
-      {/* School */}
+      {}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           School {required && '*'}
@@ -53,7 +45,7 @@ export default function SchoolDeptSelect({
         </select>
       </div>
 
-      {/* Department */}
+      {}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Department {required && '*'}

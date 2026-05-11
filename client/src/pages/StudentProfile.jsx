@@ -25,7 +25,7 @@ export default function StudentProfile() {
       setPhoneSuccess('Phone number saved');
       setTimeout(() => setPhoneSuccess(''), 3000);
     } catch {
-      // silent
+      
     } finally {
       setSavingPhone(false);
     }
@@ -58,7 +58,7 @@ export default function StudentProfile() {
       <div className="max-w-lg mx-auto space-y-5">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">My Profile</h1>
 
-        {/* Profile info */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
           <div className="flex items-center gap-4 mb-5">
             <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-3xl font-bold shrink-0">
@@ -88,7 +88,7 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Phone number */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
           <h2 className="font-bold text-gray-800 mb-1">Phone Number</h2>
           <p className="text-sm text-gray-500 mb-4">Optional — for contact purposes.</p>
@@ -109,7 +109,7 @@ export default function StudentProfile() {
           </form>
         </div>
 
-        {/* Change password */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
           <h2 className="font-bold text-gray-800 mb-1">Change Password</h2>
           <p className="text-sm text-gray-500 mb-5">Enter your current password to set a new one.</p>

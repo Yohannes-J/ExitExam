@@ -5,7 +5,6 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/results — student's own results
 router.get('/', protect, async (req, res) => {
   try {
     const results = await Result.find({ student: req.user._id })
@@ -17,7 +16,6 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// GET /api/results/:id — single result with review
 router.get('/:id', protect, async (req, res) => {
   try {
     const result = await Result.findById(req.params.id).populate('exam');

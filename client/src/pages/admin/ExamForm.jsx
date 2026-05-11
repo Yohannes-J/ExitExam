@@ -62,7 +62,7 @@ export default function ExamForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    // Validate
+    
     for (let i = 0; i < form.questions.length; i++) {
       const q = form.questions[i];
       if (!q.text.trim()) { setError(`Question ${i + 1} text is empty`); return; }
@@ -102,7 +102,7 @@ export default function ExamForm() {
         {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic info */}
+          {}
           <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
             <h2 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Exam Details</h2>
             <div className="grid grid-cols-2 gap-4">
@@ -125,7 +125,7 @@ export default function ExamForm() {
                   placeholder="Software Engineering" />
               </div>
 
-              {/* Department — teacher picks from their departments, admin picks school+dept */}
+              {}
               {isTeacher ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
@@ -219,7 +219,7 @@ export default function ExamForm() {
             </div>
           </div>
 
-          {/* Questions */}
+          {}
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-bold text-gray-700 text-sm uppercase tracking-wide">Questions ({form.questions.length})</h2>
@@ -279,7 +279,7 @@ export default function ExamForm() {
                   placeholder="Enter question text..."
                 />
 
-                {/* Optional code block — collapsed by default */}
+                {}
                 <div className="mb-4">
                   <button
                     type="button"
@@ -315,9 +315,9 @@ export default function ExamForm() {
                   )}
                 </div>
 
-                {/* Question type selector — removed, use dropdown above */}
+                {}
 
-                {/* MCQ options */}
+                {}
                 {q.type === 'mcq' && (
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Options <span className="text-gray-400 font-normal normal-case">(select correct answer)</span></label>
@@ -337,7 +337,7 @@ export default function ExamForm() {
                   </div>
                 )}
 
-                {/* True / False */}
+                {}
                 {q.type === 'truefalse' && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Correct Answer</label>
@@ -357,7 +357,7 @@ export default function ExamForm() {
                   </div>
                 )}
 
-                {/* Short Answer */}
+                {}
                 {q.type === 'short' && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
@@ -370,7 +370,7 @@ export default function ExamForm() {
                   </div>
                 )}
 
-                {/* Essay */}
+                {}
                 {q.type === 'essay' && (
                   <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 text-purple-700 text-sm font-semibold mb-1">

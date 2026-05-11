@@ -2,7 +2,7 @@ export default function Pagination({ page, totalPages, onPage }) {
   if (totalPages <= 1) return null;
 
   const pages = [];
-  const delta = 1; // pages around current
+  const delta = 1; 
 
   for (let i = 1; i <= totalPages; i++) {
     if (
@@ -19,12 +19,12 @@ export default function Pagination({ page, totalPages, onPage }) {
     }
   }
 
-  // Remove duplicate ellipses
+  
   const deduped = pages.filter((p, i) => !(p === '...' && pages[i - 1] === '...'));
 
   return (
     <div className="flex items-center justify-center gap-1 mt-5 flex-wrap">
-      {/* Prev */}
+      {}
       <button
         onClick={() => onPage(page - 1)}
         disabled={page === 1}
@@ -51,7 +51,7 @@ export default function Pagination({ page, totalPages, onPage }) {
         )
       )}
 
-      {/* Next */}
+      {}
       <button
         onClick={() => onPage(page + 1)}
         disabled={page === totalPages}

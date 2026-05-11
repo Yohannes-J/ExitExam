@@ -43,7 +43,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats */}
+        {}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">          {[
             { label: 'Exams', value: stats.exams, icon: '📋', color: 'indigo', link: '/admin/exams' },
             { label: 'Submissions', value: stats.results, icon: '📊', color: 'green', link: '/admin/results' },
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Quick actions */}
+        {}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
           <Link to="/admin/exams/new" className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-4 sm:p-5 transition">
             <div className="text-2xl mb-1">➕</div>
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Recent submissions */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-800 text-sm sm:text-base">Recent Submissions</h2>

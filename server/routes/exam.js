@@ -5,15 +5,14 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/exams — list active exams for student (filtered by their department)
 router.get('/', protect, async (req, res) => {
   try {
     const studentDept = req.user.department || '';
 
-    // Build department filter:
-    // - 'All' exams are visible to everyone
-    // - dept-specific exams only visible to matching students
-    // - empty dept exams only visible if student also has no dept
+    
+    
+    
+    
     const deptFilter = studentDept
       ? { $or: [{ department: 'All' }, { department: studentDept }] }
       : { $or: [{ department: 'All' }, { department: '' }, { department: { $exists: false } }] };
@@ -35,20 +34,19 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// GET /api/exams/:id — get exam with questions (no correct answers)
 router.get('/:id', protect, async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id).select('-questions.correctIndex');
     if (!exam || !exam.isActive) return res.status(404).json({ message: 'Exam not found' });
 
-    // Check department access
+    
     const studentDept = req.user.department || '';
     const examDept = exam.department || '';
     if (examDept !== 'All' && examDept !== '' && examDept !== studentDept) {
       return res.status(403).json({ message: 'This exam is not available for your department' });
     }
 
-    // Check if already submitted
+    
     const existing = await Result.findOne({ student: req.user._id, exam: exam._id });
     if (existing) return res.status(403).json({ message: 'You have already submitted this exam' });
 
@@ -58,10 +56,9 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// POST /api/exams/:id/submit — submit answers
 router.post('/:id/submit', protect, async (req, res) => {
   try {
-    const { answers, timeTaken } = req.body; // answers: [{ questionId, selectedIndex }]
+    const { answers, timeTaken } = req.body; 
     const exam = await Exam.findById(req.params.id);
     if (!exam || !exam.isActive) return res.status(404).json({ message: 'Exam not found' });
 
@@ -81,7 +78,7 @@ router.post('/:id/submit', protect, async (req, res) => {
       } else if (q.type === 'truefalse') {
         isCorrect = selectedIndex === q.correctIndex;
       } else if (q.type === 'short' || q.type === 'essay') {
-        // Text answers are graded manually — mark as pending (false for now)
+        
         isCorrect = false;
       }
 

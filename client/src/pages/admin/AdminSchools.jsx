@@ -4,17 +4,17 @@ import api from '../../api/axios';
 export default function AdminSchools() {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(null); // school id expanded
-  const [depts, setDepts] = useState({}); // { schoolId: [dept, ...] }
+  const [expanded, setExpanded] = useState(null); 
+  const [depts, setDepts] = useState({}); 
   const [loadingDepts, setLoadingDepts] = useState({});
 
-  // School form
-  const [schoolModal, setSchoolModal] = useState(null); // 'add' | 'edit'
+  
+  const [schoolModal, setSchoolModal] = useState(null); 
   const [schoolForm, setSchoolForm] = useState({ name: '', code: '' });
   const [editSchool, setEditSchool] = useState(null);
 
-  // Dept form
-  const [deptModal, setDeptModal] = useState(null); // schoolId
+  
+  const [deptModal, setDeptModal] = useState(null); 
   const [deptForm, setDeptForm] = useState({ name: '' });
   const [editDept, setEditDept] = useState(null);
 
@@ -45,7 +45,7 @@ export default function AdminSchools() {
     loadDepts(id);
   };
 
-  // ── School CRUD ──
+  
   const handleAddSchool = async (e) => {
     e.preventDefault(); setError(''); setSaving(true);
     try {
@@ -76,7 +76,7 @@ export default function AdminSchools() {
     setDepts(p => { const n = { ...p }; delete n[id]; return n; });
   };
 
-  // ── Department CRUD ──
+  
   const handleAddDept = async (e) => {
     e.preventDefault(); setError(''); setSaving(true);
     try {
@@ -145,7 +145,7 @@ export default function AdminSchools() {
           <div className="space-y-3">
             {schools.map(school => (
               <div key={school._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* School row */}
+                {}
                 <div className="flex items-center gap-3 px-5 py-4">
                   <button onClick={() => toggleExpand(school._id)}
                     className="text-gray-400 hover:text-indigo-600 transition text-lg w-6 shrink-0">
@@ -176,7 +176,7 @@ export default function AdminSchools() {
                   </div>
                 </div>
 
-                {/* Departments */}
+                {}
                 {expanded === school._id && (
                   <div className="border-t border-gray-50 bg-gray-50/50">
                     {loadingDepts[school._id] ? (
@@ -207,7 +207,7 @@ export default function AdminSchools() {
         )}
       </div>
 
-      {/* Add/Edit School Modal */}
+      {}
       {(schoolModal === 'add' || schoolModal === 'edit') && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6">
@@ -237,7 +237,7 @@ export default function AdminSchools() {
         </div>
       )}
 
-      {/* Add Department Modal */}
+      {}
       {deptModal && !editDept && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6">
@@ -262,7 +262,7 @@ export default function AdminSchools() {
         </div>
       )}
 
-      {/* Edit Department Modal */}
+      {}
       {editDept && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-6">

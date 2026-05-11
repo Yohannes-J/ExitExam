@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 
-/**
- * School selector + multi-checkbox department selector for teachers.
- * Props:
- *   school, onSchoolChange — controlled school id
- *   departments (array of dept names), onDeptsChange
- */
 export default function SchoolMultiDeptSelect({ school, onSchoolChange, departments = [], onDeptsChange }) {
   const [schools, setSchools] = useState([]);
   const [depts, setDepts] = useState([]);
@@ -35,7 +29,7 @@ export default function SchoolMultiDeptSelect({ school, onSchoolChange, departme
 
   return (
     <div className="space-y-3">
-      {/* School */}
+      {}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">School *</label>
         <select required disabled={loadingSchools} value={school || ''}
@@ -46,7 +40,7 @@ export default function SchoolMultiDeptSelect({ school, onSchoolChange, departme
         </select>
       </div>
 
-      {/* Departments — multi checkbox */}
+      {}
       {school && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

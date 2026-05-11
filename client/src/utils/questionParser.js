@@ -1,34 +1,24 @@
-/**
- * Parse plain text extracted from PDF/Word into question objects.
- *
- * Handles real-world exam formats like:
- *   1. Question text?
- *   A. Option A   or   A) Option A
- *   B. Option B
- *   C. Option C
- *   D. Option D
- *   ANSWER: B   or   Answer: B.
- */
+
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
 
 export function parseQuestionsFromText(rawText) {
   if (!rawText || !rawText.trim()) return [];
 
-  // Normalize: collapse multiple spaces, fix common PDF extraction issues
+  
   let text = rawText
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
-    // Normalize option lines: ensure A. / A) are on their own line
+    
     .replace(/([A-D][.)]\s)/g, '\n$1')
-    // Normalize ANSWER lines
+    
     .replace(/(ANSWER|Answer|answer)\s*:/g, '\nANSWER:')
-    // Split run-together question numbers: "...text D. option ANSWER: X 2. Next question"
+    
     .replace(/(\d+)\.\s+(?=[A-Z])/g, '\n$1. ');
 
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const questions = [];
-  const seenNumbers = new Set(); // prevent duplicate question numbers
+  const seenNumbers = new Set(); 
 
   let currentQ = null;
   let currentQNum = null;
@@ -38,7 +28,7 @@ export function parseQuestionsFromText(rawText) {
   const saveQuestion = () => {
     if (!currentQ || !currentQ.trim()) return;
 
-    // Clean up question text — remove leading number
+    
     const qText = currentQ.replace(/^\d+[\.\)]\s*/, '').trim();
     if (!qText) return;
 
@@ -68,9 +58,9 @@ export function parseQuestionsFromText(rawText) {
   };
 
   for (const line of lines) {
-    // Skip header/footer lines
+    
     if (
-      /^S\s*o\s*f\s*t\s*w\s*a\s*r\s*e/.test(line) || // spaced-out header
+      /^S\s*o\s*f\s*t\s*w\s*a\s*r\s*e/.test(line) || 
       /^Page\s+\d+/i.test(line) ||
       /^Instruction:/i.test(line) ||
       /^Program:/i.test(line) ||
@@ -82,48 +72,48 @@ export function parseQuestionsFromText(rawText) {
       /^IDNo/i.test(line) ||
       /^May \d+/i.test(line) ||
       /^Jimma University/i.test(line) ||
-      /^\d+\s*\|\s*\d+$/.test(line) || // page numbers like "7 | 28"
+      /^\d+\s*\|\s*\d+$/.test(line) || 
       line.length < 2
     ) continue;
 
-    // ANSWER line
+    
     const ansMatch = line.match(/^(?:ANSWER|Answer|ans(?:wer)?)\s*[:\-]\s*(.+)/i);
     if (ansMatch) {
       answerRaw = ansMatch[1].trim().replace(/\.$/, '');
       continue;
     }
 
-    // Option line: A. text  or  A) text
+    
     const optMatch = line.match(/^([A-Ea-e])[.)]\s+(.+)/);
     if (optMatch) {
       currentOptions.push(optMatch[2].trim());
       continue;
     }
 
-    // Question number line: 1. text  or  1) text
-    // Must have at least 10 chars of content to avoid picking up stray numbers
+    
+    
     const qMatch = line.match(/^(\d+)[.)]\s+(.{10,})/);
     if (qMatch) {
       const qNum = parseInt(qMatch[1]);
-      // Skip if we've already seen this question number (duplicate from page headers)
+      
       if (seenNumbers.has(qNum)) continue;
       seenNumbers.add(qNum);
-      // Save previous question
+      
       saveQuestion();
-      // Start new question
+      
       currentQ = line;
       currentOptions = [];
       answerRaw = '';
       continue;
     }
 
-    // Continuation of question text (before options appear)
+    
     if (currentQ && currentOptions.length === 0 && !answerRaw) {
       currentQ += ' ' + line;
     }
   }
 
-  // Save last question
+  
   saveQuestion();
 
   return questions;

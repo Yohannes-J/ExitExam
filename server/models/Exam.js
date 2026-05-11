@@ -6,7 +6,7 @@ const questionSchema = new mongoose.Schema({
   type: { type: String, enum: ['mcq', 'truefalse', 'short', 'essay'], default: 'mcq' },
   options: [{ type: String }],
   correctIndex: { type: Number, default: 0 },
-  correctText: { type: String, default: '' }, // for short answer
+  correctText: { type: String, default: '' }, 
   points: { type: Number, default: 1 },
 });
 
@@ -16,8 +16,8 @@ const examSchema = new mongoose.Schema(
     description: { type: String, default: '' },
     subject: { type: String, required: true },
     department: { type: String, default: 'All' },
-    duration: { type: Number, required: true }, // in minutes
-    passingScore: { type: Number, default: 50 }, // percentage
+    duration: { type: Number, required: true }, 
+    passingScore: { type: Number, default: 50 }, 
     questions: [questionSchema],
     isActive: { type: Boolean, default: true },
     shuffleQuestions: { type: Boolean, default: false },

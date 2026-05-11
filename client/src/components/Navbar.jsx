@@ -15,7 +15,6 @@ export default function Navbar() {
     setMenuOpen(false);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -45,7 +44,6 @@ export default function Navbar() {
   const teacherLinks = [
     { to: '/admin', label: 'Dashboard' },
     { to: '/admin/exams', label: 'Exams' },
-    // My Students handled separately below
     { to: '/admin/results', label: 'Results' },
     { to: '/admin/reports', label: 'Reports' },
     { to: '/admin/profile', label: 'Profile' },
@@ -65,7 +63,7 @@ export default function Navbar() {
     <nav className="bg-indigo-700 text-white shadow-lg relative z-50">
       <div className="max-w-7xl mx-auto px-4 xl:px-8">
         <div className="flex items-center justify-between h-14">
-          {/* Logo */}
+          {}
           <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight shrink-0">
             <span className="text-2xl">🎓</span>
             <span>ExitExam</span>
@@ -73,7 +71,7 @@ export default function Navbar() {
 
           {user && (
             <>
-              {/* Desktop nav */}
+              
               <div className="hidden md:flex items-center gap-5">
                 {navLinks.map(({ to, label }) => (
                   <Link key={to} to={to} className="hover:text-indigo-200 text-sm font-medium transition">
@@ -81,7 +79,7 @@ export default function Navbar() {
                   </Link>
                 ))}
 
-                {/* My Students — dropdown for multi-dept teachers, plain link for single */}
+             
                 {isTeacher && (
                   hasMultipleDepts ? (
                     <div className="relative" ref={dropdownRef}>
@@ -136,7 +134,7 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Mobile hamburger */}
+              {}
               <button onClick={() => setMenuOpen(!menuOpen)}
                 className="md:hidden p-2 rounded-lg hover:bg-indigo-600 transition" aria-label="Toggle menu">
                 {menuOpen ? (
@@ -153,7 +151,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile menu */}
+        {}
         {user && menuOpen && (
           <div className="md:hidden border-t border-indigo-600 py-3 space-y-1">
             <div className="flex items-center gap-3 px-2 py-2 mb-2">
@@ -173,7 +171,7 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* My Students mobile */}
+            {}
             {isTeacher && (
               hasMultipleDepts ? (
                 <div>

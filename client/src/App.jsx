@@ -39,11 +39,11 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public */}
+          {}
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Student routes */}
+          {}
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Layout><Dashboard /></Layout>
@@ -65,7 +65,7 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          {/* Admin routes */}
+          {}
           <Route path="/admin" element={
             <ProtectedRoute adminOnly>
               <Layout><AdminDashboard /></Layout>
@@ -127,7 +127,7 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          {/* Fallback */}
+          {}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

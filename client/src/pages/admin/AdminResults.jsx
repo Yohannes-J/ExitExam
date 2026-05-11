@@ -32,7 +32,7 @@ export default function AdminResults() {
     Promise.all([api.get("/admin/results"), api.get("/admin/exams")])
       .then(([r, e]) => {
         setResults(r.data);
-        // Only show exams that have at least one result
+        
         const examIdsWithResults = new Set(r.data.map(res => res.exam?._id).filter(Boolean));
         setExams(e.data.filter(ex => examIdsWithResults.has(ex._id)));
       })
@@ -47,7 +47,7 @@ export default function AdminResults() {
       setSuccess("Result deleted successfully");
       setTimeout(() => setSuccess(""), 3000);
     } catch {
-      // silent
+      
     } finally {
       setDeleting(null);
       setConfirmId(null);
@@ -67,7 +67,7 @@ export default function AdminResults() {
     return matchSearch && matchFilter && matchExam && matchDept;
   });
 
-  // Reset page when filters change
+  
   const resetPage = () => setPage(1);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -120,7 +120,7 @@ export default function AdminResults() {
           </div>
         )}
 
-        {/* Department cards view */}
+        {}
         {viewMode === "departments" && !activeDept && (() => {
           const deptMap = {};
           results.forEach(r => {
@@ -160,7 +160,7 @@ export default function AdminResults() {
           );
         })()}
 
-        {/* Normal view — show when "all" mode OR drilled into a dept */}
+        {}
         {(viewMode === "all" || activeDept) && (
           <>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5">
@@ -178,7 +178,7 @@ export default function AdminResults() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-          {/* Exam dropdown */}
+          {}
           <select value={selectedExam} onChange={(e) => { setSelectedExam(e.target.value); setActiveDept(null); resetPage(); }}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white min-w-0 sm:max-w-xs">
             <option value="all">All Exams</option>
@@ -311,7 +311,7 @@ export default function AdminResults() {
           )}
         </div>
 
-        {/* Pagination */}
+        {}
         {filtered.length > PAGE_SIZE && (
           <div className="mt-4">
             <p className="text-center text-xs text-gray-400 mb-2">

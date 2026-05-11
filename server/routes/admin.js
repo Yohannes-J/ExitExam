@@ -5,18 +5,16 @@ import User from '../models/User.js';
 import { protect, adminOnly, superAdminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
-router.use(protect, adminOnly); // teachers + admins can access
+router.use(protect, adminOnly); 
 
-// Helper: is this user a teacher (not superadmin)?
 const isTeacher = (user) => user.role === 'teacher';
-// Helper: teacher's departments array (falls back to single department)
+
 const teacherDepts = (user) => {
   if (user.departments && user.departments.length > 0) return user.departments;
   if (user.department) return [user.department];
   return [];
 };
 
-// GET /api/admin/exams — teachers see only their dept exams
 router.get('/exams', async (req, res) => {
   try {
     const query = isTeacher(req.user)
@@ -29,11 +27,10 @@ router.get('/exams', async (req, res) => {
   }
 });
 
-// POST /api/admin/exams — teachers can create exams for their dept
 router.post('/exams', async (req, res) => {
   try {
     const data = { ...req.body, createdBy: req.user._id };
-    // For teachers: validate the department is one of theirs
+    
     if (isTeacher(req.user)) {
       const myDepts = teacherDepts(req.user);
       if (!myDepts.includes(data.department)) {
@@ -47,7 +44,6 @@ router.post('/exams', async (req, res) => {
   }
 });
 
-// PUT /api/admin/exams/:id
 router.put('/exams/:id', async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
@@ -56,7 +52,7 @@ router.put('/exams/:id', async (req, res) => {
       return res.status(403).json({ message: 'Access denied to this exam' });
     }
     const updateData = { ...req.body };
-    // Always force teacher's department — never let it be overridden
+    
     if (isTeacher(req.user)) updateData.department = req.user.department;
     const updated = await Exam.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updated);
@@ -65,7 +61,6 @@ router.put('/exams/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/admin/exams/:id
 router.delete('/exams/:id', async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
@@ -80,7 +75,6 @@ router.delete('/exams/:id', async (req, res) => {
   }
 });
 
-// GET /api/admin/results — teachers see only their dept results
 router.get('/results', async (req, res) => {
   try {
     let results = await Result.find()
@@ -102,7 +96,6 @@ router.get('/results', async (req, res) => {
   }
 });
 
-// GET /api/admin/students — teachers see only their dept students
 router.get('/students', async (req, res) => {
   try {
     const query = isTeacher(req.user)
@@ -115,7 +108,6 @@ router.get('/students', async (req, res) => {
   }
 });
 
-// POST /api/admin/students — create a STUDENT
 router.post('/students', async (req, res) => {
   try {
     const { name, studentId, department, password } = req.body;
@@ -127,7 +119,7 @@ router.post('/students', async (req, res) => {
     }
     const exists = await User.findOne({ studentId });
     if (exists) return res.status(409).json({ message: 'Student ID already exists' });
-    // Teacher can only add students to their own department
+    
     const dept = isTeacher(req.user) ? req.user.department : department;
     const user = await User.create({ name, studentId, department: dept, password, role: 'student' });
     res.status(201).json({
@@ -139,7 +131,6 @@ router.post('/students', async (req, res) => {
   }
 });
 
-// POST /api/admin/admins — create ADMIN or TEACHER (superadmin only)
 router.post('/admins', superAdminOnly, async (req, res) => {
   try {
     const { name, email, department, departments, role } = req.body;
@@ -168,7 +159,6 @@ router.post('/admins', superAdminOnly, async (req, res) => {
   }
 });
 
-// PUT /api/admin/students/:id
 router.put('/students/:id', async (req, res) => {
   try {
     const { name, studentId, email, department, password, role } = req.body;
@@ -188,12 +178,11 @@ router.put('/students/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/admin/students/:id — teachers can only delete their dept students
 router.delete('/students/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    // Prevent deleting the last superadmin
+    
     if (user.role === 'admin') {
       const adminCount = await User.countDocuments({ role: 'admin' });
       if (adminCount <= 1) {
@@ -210,7 +199,6 @@ router.delete('/students/:id', async (req, res) => {
   }
 });
 
-// GET /api/admin/results/:id — full result detail for admin/teacher
 router.get('/results/:id', async (req, res) => {
   try {
     const result = await Result.findById(req.params.id)
@@ -223,7 +211,6 @@ router.get('/results/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/admin/results/:id
 router.delete('/results/:id', async (req, res) => {
   try {
     const result = await Result.findByIdAndDelete(req.params.id);

@@ -6,7 +6,7 @@ export default function AdminResultDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [result, setResult] = useState(null);
-  const [allResults, setAllResults] = useState([]); // all results for same exam
+  const [allResults, setAllResults] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -14,7 +14,7 @@ export default function AdminResultDetail() {
     api.get(`/admin/results/${id}`)
       .then(async (res) => {
         setResult(res.data);
-        // Fetch all results for this exam to compute difficulty
+        
         const all = await api.get('/admin/results');
         const examResults = all.data.filter(r => r.exam?._id === res.data.exam?._id);
         setAllResults(examResults);
@@ -49,7 +49,7 @@ export default function AdminResultDetail() {
   const exam = result.exam;
   const student = result.student;
 
-  // Compute per-question miss rate across all students who took this exam
+  
   const questionStats = exam.questions?.map((q, i) => {
     const total = allResults.length;
     const missed = allResults.filter(r => {
@@ -60,20 +60,20 @@ export default function AdminResultDetail() {
     return { ...q, index: i, missed, total, missRate };
   }) || [];
 
-  // Sort by miss rate descending for difficulty ranking
+  
   const hardest = [...questionStats].sort((a, b) => b.missRate - a.missRate).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-5xl mx-auto xl:px-8">
 
-        {/* Back */}
+        {}
         <button onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm mb-5 transition">
           ← Back to Results
         </button>
 
-        {/* Student + score header */}
+        {}
         <div className={`rounded-2xl shadow-lg mb-6 overflow-hidden`}>
           <div className={`h-1.5 ${result.passed ? 'bg-gradient-to-r from-emerald-400 to-green-500' : 'bg-gradient-to-r from-red-400 to-rose-500'}`} />
           <div className={`p-5 sm:p-6 ${result.passed ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-red-600 to-rose-700'} text-white`}>
@@ -112,7 +112,7 @@ export default function AdminResultDetail() {
           </div>
         </div>
 
-        {/* Hardest questions for this exam */}
+        {}
         {allResults.length > 1 && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
@@ -142,7 +142,7 @@ export default function AdminResultDetail() {
           </div>
         )}
 
-        {/* Detailed answer review */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-bold text-gray-800">Detailed Answer Review</h2>
@@ -158,7 +158,7 @@ export default function AdminResultDetail() {
 
               return (
                 <div key={i} className={`p-5 ${isCorrect ? '' : 'bg-red-50/30'}`}>
-                  {/* Question header */}
+                  {}
                   <div className="flex items-start gap-3 mb-3">
                     <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                       {isCorrect ? '✓' : '✗'}
@@ -175,7 +175,7 @@ export default function AdminResultDetail() {
                             {q.type === 'truefalse' ? 'True/False' : q.type === 'short' ? 'Short Answer' : 'Essay'}
                           </span>
                         )}
-                        {/* Miss rate badge */}
+                        {}
                         {allResults.length > 1 && stat && (
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ml-auto ${
                             stat.missRate >= 70 ? 'bg-red-100 text-red-600'
@@ -196,7 +196,7 @@ export default function AdminResultDetail() {
                     </pre>
                   )}
 
-                  {/* MCQ / True-False options */}
+                  {}
                   {(q.type === 'mcq' || !q.type || q.type === 'truefalse') && (
                     <div className="ml-10 space-y-1.5">
                       {(q.type === 'truefalse' ? ['True', 'False'] : q.options).map((opt, j) => {
@@ -230,7 +230,7 @@ export default function AdminResultDetail() {
                     </div>
                   )}
 
-                  {/* Short / Essay */}
+                  {}
                   {(q.type === 'short' || q.type === 'essay') && (
                     <div className="ml-10 space-y-2">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">

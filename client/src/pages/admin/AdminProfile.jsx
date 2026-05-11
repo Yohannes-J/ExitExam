@@ -38,7 +38,7 @@ export default function AdminProfile() {
       <div className="max-w-lg mx-auto">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
 
-        {/* Info card */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-2xl font-bold shrink-0">
@@ -62,7 +62,7 @@ export default function AdminProfile() {
           </div>
         </div>
 
-        {/* Change password */}
+        {}
         <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6">
           <h2 className="font-bold text-gray-800 mb-1">Change Password</h2>
           <p className="text-sm text-gray-500 mb-5">Enter your current password to set a new one.</p>

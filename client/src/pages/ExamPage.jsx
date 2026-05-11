@@ -5,9 +5,8 @@ import CountdownTimer from '../components/CountdownTimer';
 import { seededShuffle } from '../utils/shuffle';
 import { useAuth } from '../context/AuthContext';
 
-// localStorage key for a specific exam session
 const sessionKey = (examId) => `exam_session_${examId}`;
-const SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
+const SESSION_TTL = 24 * 60 * 60 * 1000; 
 
 const saveSession = (examId, data) => {
   try { localStorage.setItem(sessionKey(examId), JSON.stringify({ ...data, savedAt: Date.now() })); } catch {}
@@ -18,7 +17,7 @@ const loadSession = (examId) => {
     const raw = localStorage.getItem(sessionKey(examId));
     if (!raw) return null;
     const data = JSON.parse(raw);
-    // Expire after 24 hours
+    
     if (Date.now() - (data.savedAt || 0) > SESSION_TTL) {
       localStorage.removeItem(sessionKey(examId));
       return null;
@@ -36,7 +35,7 @@ export default function ExamPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [exam, setExam] = useState(null);
-  const [questionOrder, setQuestionOrder] = useState([]); // shuffled indices into exam.questions
+  const [questionOrder, setQuestionOrder] = useState([]); 
   const [answers, setAnswers] = useState({});
   const [currentQ, setCurrentQ] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -45,13 +44,13 @@ export default function ExamPage() {
   const [started, setStarted] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [resuming, setResuming] = useState(false); // true if we found a saved session
-  const [savedTimeLeft, setSavedTimeLeft] = useState(null); // seconds remaining from saved session
+  const [resuming, setResuming] = useState(false); 
+  const [savedTimeLeft, setSavedTimeLeft] = useState(null); 
 
   const startTimeRef = useRef(null);
   const timeLeftRef = useRef(0);
 
-  // Load exam + check for saved session
+  
   useEffect(() => {
     api.get(`/exams/${id}`)
       .then((res) => {
@@ -60,14 +59,14 @@ export default function ExamPage() {
         const fullDuration = examData.duration * 60;
         timeLeftRef.current = fullDuration;
 
-        // Build question order (shuffled per student if enabled)
+        
         const indices = examData.questions.map((_, i) => i);
         const order = examData.shuffleQuestions && user?.id
-          ? seededShuffle(indices, user.id + id) // seed = userId + examId for uniqueness
+          ? seededShuffle(indices, user.id + id) 
           : indices;
         setQuestionOrder(order);
 
-        // Check for saved session
+        
         const saved = loadSession(id);
         if (saved && saved.started) {
           const elapsed = saved.pausedAt ? 0 : Math.floor((Date.now() - saved.lastSaved) / 1000);
@@ -88,7 +87,7 @@ export default function ExamPage() {
       .finally(() => setLoading(false));
   }, [id, user]);
 
-  // Save session to localStorage whenever answers, currentQ, or timeLeft changes
+  
   const persistSession = useCallback((updatedAnswers, updatedQ, timeLeft) => {
     if (!started) return;
     saveSession(id, {
@@ -101,12 +100,12 @@ export default function ExamPage() {
     });
   }, [id, started]);
 
-  // Save on every answer change
+  
   useEffect(() => {
     if (started) persistSession(answers, currentQ, timeLeftRef.current);
   }, [answers, currentQ]);
 
-  // Save on page hide/unload (light goes off, tab closes, etc.)
+  
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && started) {
@@ -116,7 +115,7 @@ export default function ExamPage() {
           currentQ,
           timeLeft: timeLeftRef.current,
           lastSaved: Date.now(),
-          pausedAt: Date.now(), // mark as paused — don't count offline time
+          pausedAt: Date.now(), 
         });
       }
     };
@@ -173,7 +172,7 @@ export default function ExamPage() {
     }));
     try {
       const { data } = await api.post(`/exams/${id}/submit`, { answers: payload, timeTaken });
-      clearSession(id); // clean up saved session on successful submit
+      clearSession(id); 
       navigate(`/results/${data.result._id}`, { state: { fresh: true } });
     } catch (err) {
       setError(err.response?.data?.message || 'Submission failed');
@@ -185,7 +184,7 @@ export default function ExamPage() {
 
   const handleTick = (t) => {
     timeLeftRef.current = t;
-    // Save every 10 seconds to avoid too many writes
+    
     if (t % 10 === 0) persistSession(answers, currentQ, t);
   };
 
@@ -204,7 +203,7 @@ export default function ExamPage() {
 
   const answeredCount = Object.values(answers).filter(v => v !== undefined && v !== '').length;
   const totalQ = exam?.questions?.length || 0;
-  // The actual question to show at position currentQ in the shuffled order
+  
   const realQIndex = questionOrder[currentQ] ?? currentQ;
 
   if (loading) return (
@@ -227,7 +226,7 @@ export default function ExamPage() {
     </div>
   );
 
-  // Start / Resume screen
+  
   if (!started) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-lg w-full">
@@ -271,7 +270,7 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sticky top bar */}
+      {}
       <div className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-4">
           <div className="flex-1 min-w-0">
@@ -300,7 +299,7 @@ export default function ExamPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-3 sm:px-4 xl:px-8 py-4 sm:py-6 flex gap-4 lg:gap-8">
-        {/* Question panel */}
+        {}
         <div className="flex-1 min-w-0">
           <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 mb-4">
             <div className="flex items-center justify-between gap-2 mb-4">
@@ -326,7 +325,7 @@ export default function ExamPage() {
               </pre>
             )}
             <div className="space-y-2 sm:space-y-3">
-              {/* MCQ */}
+              {}
               {(!question.type || question.type === 'mcq') && question.options.map((opt, i) => (
                 <button key={i} onClick={() => handleSelect(realQIndex, i)}
                   className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border-2 transition font-medium text-sm sm:text-base ${
@@ -343,7 +342,7 @@ export default function ExamPage() {
                 </button>
               ))}
 
-              {/* True / False */}
+              {}
               {question.type === 'truefalse' && (
                 <div className="flex gap-3">
                   {['True', 'False'].map((val, i) => (
@@ -359,7 +358,7 @@ export default function ExamPage() {
                 </div>
               )}
 
-              {/* Short Answer */}
+              {}
               {question.type === 'short' && (
                 <div>
                   <label className="block text-xs text-gray-500 mb-1.5">Your Answer</label>
@@ -380,7 +379,7 @@ export default function ExamPage() {
                 </div>
               )}
 
-              {/* Essay */}
+              {}
               {question.type === 'essay' && (
                 <div>
                   <label className="block text-xs text-gray-500 mb-1.5">Your Essay Answer</label>
@@ -404,7 +403,7 @@ export default function ExamPage() {
             </div>
           </div>
 
-          {/* Navigation */}
+          {}
           <div className="flex justify-between gap-3">
             <button onClick={() => { const q = Math.max(0, currentQ - 1); setCurrentQ(q); persistSession(answers, q, timeLeftRef.current); }}
               disabled={currentQ === 0}
@@ -425,7 +424,7 @@ export default function ExamPage() {
           </div>
         </div>
 
-        {/* Question grid sidebar */}
+        {}
         <div className={`${showSidebar ? 'fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/40 lg:bg-transparent lg:static lg:inset-auto lg:z-auto lg:flex' : 'hidden lg:block'} lg:w-44 lg:shrink-0`}>
           <div className="bg-white rounded-2xl shadow-lg lg:shadow-sm p-4 w-full max-w-xs sm:max-w-sm lg:max-w-none lg:sticky lg:top-24 mx-4 sm:mx-0 mb-4 lg:mb-0">
             <div className="flex items-center justify-between mb-3">
@@ -456,7 +455,7 @@ export default function ExamPage() {
         </div>
       </div>
 
-      {/* Confirm submit modal */}
+      {}
       {confirmSubmit && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-sm text-center">
