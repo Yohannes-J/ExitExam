@@ -20,9 +20,9 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 xl:px-8 py-6">
         {/* Welcome banner */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 sm:p-6 text-white mb-6 shadow-lg">
-          <h1 className="text-xl sm:text-2xl font-bold">Welcome back, {user?.name}! 👋</h1>
-          <p className="text-indigo-200 mt-1 text-sm sm:text-base truncate">
+        <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-5 sm:p-6 mb-6 shadow-sm">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Welcome back, {user?.name}! 👋</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base truncate">
             ID: {user?.studentId} · {user?.department || 'No department'}
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4 max-w-xs sm:max-w-sm">
@@ -31,9 +31,9 @@ export default function Dashboard() {
               { label: 'Completed', value: exams.filter(e => e.submitted).length },
               { label: 'Pending', value: exams.filter(e => !e.submitted).length },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-white/20 rounded-xl px-2 py-2 text-center">
-                <div className="text-xl sm:text-2xl font-bold">{value}</div>
-                <div className="text-xs text-indigo-200">{label}</div>
+              <div key={label} className="bg-indigo-50 border border-indigo-100 rounded-xl px-2 py-2 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-indigo-700">{value}</div>
+                <div className="text-xs text-gray-500">{label}</div>
               </div>
             ))}
           </div>

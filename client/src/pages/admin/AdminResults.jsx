@@ -1,7 +1,10 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
+import Pagination from "../../components/Pagination";
+
+const PAGE_SIZE = 15;
 
 export default function AdminResults() {
   const { user } = useAuth();
@@ -22,6 +25,7 @@ export default function AdminResults() {
   const [viewMode, setViewMode] = useState("all");
   const [activeDept, setActiveDept] = useState(null);
   const [teacherDeptTab, setTeacherDeptTab] = useState('all');
+  const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,6 +66,12 @@ export default function AdminResults() {
       : (!activeDept || r.student?.department === activeDept);
     return matchSearch && matchFilter && matchExam && matchDept;
   });
+
+  // Reset page when filters change
+  const resetPage = () => setPage(1);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const formatDate = (d) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const formatTime = (s) => `${Math.floor(s / 60)}m ${s % 60}s`;
@@ -169,7 +179,7 @@ export default function AdminResults() {
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
           {/* Exam dropdown */}
-          <select value={selectedExam} onChange={(e) => { setSelectedExam(e.target.value); setActiveDept(null); }}
+          <select value={selectedExam} onChange={(e) => { setSelectedExam(e.target.value); setActiveDept(null); resetPage(); }}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white min-w-0 sm:max-w-xs">
             <option value="all">All Exams</option>
             {exams.map(e => (
@@ -177,7 +187,7 @@ export default function AdminResults() {
             ))}
           </select>
           <input type="text" placeholder="Search by student name, ID..."
-            value={search} onChange={(e) => setSearch(e.target.value)}
+            value={search} onChange={(e) => { setSearch(e.target.value); resetPage(); }}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
           <select value={filter} onChange={(e) => setFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
@@ -207,7 +217,7 @@ export default function AdminResults() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map((r) => (
+              {paginated.map((r) => (
                 <tr key={r._id}
                   onClick={() => navigate(`/admin/results/${r._id}`)}
                   className="hover:bg-indigo-50/40 transition cursor-pointer group">
@@ -259,7 +269,7 @@ export default function AdminResults() {
         </div>
 
         <div className="sm:hidden space-y-3">
-          {filtered.map((r) => (
+          {paginated.map((r) => (
             <div key={r._id} className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -300,6 +310,16 @@ export default function AdminResults() {
             <div className="text-center py-8 text-gray-400 text-sm">No results found</div>
           )}
         </div>
+
+        {/* Pagination */}
+        {filtered.length > PAGE_SIZE && (
+          <div className="mt-4">
+            <p className="text-center text-xs text-gray-400 mb-2">
+              Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+            </p>
+            <Pagination page={page} totalPages={totalPages} onPage={setPage} />
+          </div>
+        )}
           </>
         )}
       </div>
