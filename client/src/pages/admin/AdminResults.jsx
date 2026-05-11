@@ -11,19 +11,28 @@ export default function AdminResults() {
     : [];
 
   const [results, setResults] = useState([]);
+  const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [selectedExam, setSelectedExam] = useState("all");
   const [deleting, setDeleting] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
   const [success, setSuccess] = useState("");
-  const [viewMode, setViewMode] = useState("all"); // "all" | "departments"
-  const [activeDept, setActiveDept] = useState(null); // drilldown dept for admin
-  const [teacherDeptTab, setTeacherDeptTab] = useState('all'); // tab for teacher
+  const [viewMode, setViewMode] = useState("all");
+  const [activeDept, setActiveDept] = useState(null);
+  const [teacherDeptTab, setTeacherDeptTab] = useState('all');
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get("/admin/results").then((res) => setResults(res.data)).finally(() => setLoading(false));
+    Promise.all([api.get("/admin/results"), api.get("/admin/exams")])
+      .then(([r, e]) => {
+        setResults(r.data);
+        // Only show exams that have at least one result
+        const examIdsWithResults = new Set(r.data.map(res => res.exam?._id).filter(Boolean));
+        setExams(e.data.filter(ex => examIdsWithResults.has(ex._id)));
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id) => {
@@ -47,10 +56,11 @@ export default function AdminResults() {
       r.student?.studentId?.toLowerCase().includes(search.toLowerCase()) ||
       r.exam?.title?.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || (filter === "passed" ? r.passed : !r.passed);
+    const matchExam = selectedExam === "all" || r.exam?._id === selectedExam;
     const matchDept = isTeacher
       ? (teacherDeptTab === 'all' || r.student?.department === teacherDeptTab)
       : (!activeDept || r.student?.department === activeDept);
-    return matchSearch && matchFilter && matchDept;
+    return matchSearch && matchFilter && matchExam && matchDept;
   });
 
   const formatDate = (d) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -70,6 +80,15 @@ export default function AdminResults() {
                   </svg>
                 </button>
                 {activeDept}
+              </span>
+            ) : selectedExam !== "all" ? (
+              <span className="flex items-center gap-2">
+                <button onClick={() => setSelectedExam("all")} className="text-gray-400 hover:text-indigo-600 transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                {exams.find(e => e._id === selectedExam)?.title || "Exam Results"}
               </span>
             ) : "All Results"}
           </h1>
@@ -149,7 +168,15 @@ export default function AdminResults() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-          <input type="text" placeholder="Search by student name, ID, or exam..."
+          {/* Exam dropdown */}
+          <select value={selectedExam} onChange={(e) => { setSelectedExam(e.target.value); setActiveDept(null); }}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white min-w-0 sm:max-w-xs">
+            <option value="all">All Exams</option>
+            {exams.map(e => (
+              <option key={e._id} value={e._id}>{e.title}</option>
+            ))}
+          </select>
+          <input type="text" placeholder="Search by student name, ID..."
             value={search} onChange={(e) => setSearch(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" />
           <select value={filter} onChange={(e) => setFilter(e.target.value)}
