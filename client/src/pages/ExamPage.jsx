@@ -44,8 +44,10 @@ export default function ExamPage() {
   const [started, setStarted] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [resuming, setResuming] = useState(false); 
-  const [savedTimeLeft, setSavedTimeLeft] = useState(null); 
+  const [savedTimeLeft, setSavedTimeLeft] = useState(null);
+  const [violations, setViolations] = useState(0);
+  const [showViolationWarning, setShowViolationWarning] = useState(false);
+  const MAX_VIOLATIONS = 3;
 
   const startTimeRef = useRef(null);
   const timeLeftRef = useRef(0);
@@ -88,8 +90,30 @@ export default function ExamPage() {
   }, [id, user]);
 
   
-  const persistSession = useCallback((updatedAnswers, updatedQ, timeLeft) => {
+  useEffect(() => {
     if (!started) return;
+    const handleBlur = () => {
+      setViolations(prev => {
+        const next = prev + 1;
+        setShowViolationWarning(true);
+        if (next >= MAX_VIOLATIONS) {
+          handleSubmit(true);
+        }
+        return next;
+      });
+    };
+    const handleVisChange = () => {
+      if (document.hidden) handleBlur();
+    };
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('visibilitychange', handleVisChange);
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('visibilitychange', handleVisChange);
+    };
+  }, [started, handleSubmit]);
+
+  const persistSession = useCallback((updatedAnswers, updatedQ, timeLeft) => {    if (!started) return;
     saveSession(id, {
       started: true,
       answers: updatedAnswers,
@@ -256,6 +280,8 @@ export default function ExamPage() {
             <li>You can navigate between questions freely.</li>
             <li>Unanswered questions count as wrong.</li>
             <li>If interrupted, your progress is saved automatically.</li>
+            <li>Do not switch tabs or open other windows during the exam.</li>
+            <li>Switching tabs 3 times will auto-submit your exam.</li>
           </ul>
         </div>
         <button onClick={handleStart}
@@ -269,13 +295,36 @@ export default function ExamPage() {
   const question = exam.questions[realQIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {}
+    <div className="min-h-screen bg-gray-50"
+      onCopy={e => e.preventDefault()}
+      onCut={e => e.preventDefault()}
+      onPaste={e => e.preventDefault()}
+      onContextMenu={e => e.preventDefault()}
+      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+    >
+      {showViolationWarning && (
+        <div className="bg-red-600 text-white px-4 py-2.5 flex items-center justify-between text-sm z-50 relative">
+          <span>
+            ⚠️ <strong>Tab switch detected!</strong> Violation {violations}/{MAX_VIOLATIONS}.
+            {violations >= MAX_VIOLATIONS
+              ? ' Exam is being submitted.'
+              : ` ${MAX_VIOLATIONS - violations} more will auto-submit your exam.`}
+          </span>
+          <button onClick={() => setShowViolationWarning(false)} className="ml-4 text-white/80 hover:text-white font-bold text-lg leading-none">✕</button>
+        </div>
+      )}
       <div className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-gray-800 truncate text-sm sm:text-base">{exam.title}</h1>
-            <p className="text-xs text-gray-500">{answeredCount}/{totalQ} answered</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-gray-500">{answeredCount}/{totalQ} answered</p>
+              {violations > 0 && (
+                <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">
+                  ⚠️ {violations} violation{violations !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
           </div>
           <CountdownTimer
             durationSeconds={exam.duration * 60}
