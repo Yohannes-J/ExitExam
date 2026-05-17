@@ -47,7 +47,7 @@ export default function ExamPage() {
   const [savedTimeLeft, setSavedTimeLeft] = useState(null);
   const [violations, setViolations] = useState(0);
   const [showViolationWarning, setShowViolationWarning] = useState(false);
-  const MAX_VIOLATIONS = 3;
+  const MAX_VIOLATIONS = 5;
 
   const startTimeRef = useRef(null);
   const timeLeftRef = useRef(0);
@@ -276,7 +276,7 @@ export default function ExamPage() {
             <li>Unanswered questions count as wrong.</li>
             <li>If interrupted, your progress is saved automatically.</li>
             <li>Do not switch tabs or open other windows during the exam.</li>
-            <li>Switching tabs 3 times will auto-submit your exam.</li>
+            <li>Switching tabs 5 times will auto-submit your exam.</li>
           </ul>
         </div>
         <button onClick={handleStart}
