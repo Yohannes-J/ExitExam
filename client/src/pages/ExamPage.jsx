@@ -89,30 +89,6 @@ export default function ExamPage() {
       .finally(() => setLoading(false));
   }, [id, user]);
 
-  
-  useEffect(() => {
-    if (!started) return;
-    const handleBlur = () => {
-      setViolations(prev => {
-        const next = prev + 1;
-        setShowViolationWarning(true);
-        if (next >= MAX_VIOLATIONS) {
-          handleSubmit(true);
-        }
-        return next;
-      });
-    };
-    const handleVisChange = () => {
-      if (document.hidden) handleBlur();
-    };
-    window.addEventListener('blur', handleBlur);
-    document.addEventListener('visibilitychange', handleVisChange);
-    return () => {
-      window.removeEventListener('blur', handleBlur);
-      document.removeEventListener('visibilitychange', handleVisChange);
-    };
-  }, [started, handleSubmit]);
-
   const persistSession = useCallback((updatedAnswers, updatedQ, timeLeft) => {    if (!started) return;
     saveSession(id, {
       started: true,
