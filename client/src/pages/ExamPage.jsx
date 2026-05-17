@@ -206,6 +206,25 @@ export default function ExamPage() {
 
   const handleTimeUp = useCallback(() => { handleSubmit(true); }, [handleSubmit]);
 
+  useEffect(() => {
+    if (!started) return;
+    const onBlur = () => {
+      setViolations(prev => {
+        const next = prev + 1;
+        setShowViolationWarning(true);
+        if (next >= MAX_VIOLATIONS) handleSubmit(true);
+        return next;
+      });
+    };
+    const onVisChange = () => { if (document.hidden) onBlur(); };
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVisChange);
+    };
+  }, [started, handleSubmit]);
+
   const handleTick = (t) => {
     timeLeftRef.current = t;
     
