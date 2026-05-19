@@ -45,7 +45,10 @@ export default function ExamPage() {
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [savedTimeLeft, setSavedTimeLeft] = useState(null);
-  const [violations, setViolations] = useState(0);
+  const [resuming, setResuming] = useState(false);
+  const [violations, setViolations] = useState(() => {
+    try { return parseInt(localStorage.getItem(`violations_${id}`) || '0', 10); } catch { return 0; }
+  });
   const [showViolationWarning, setShowViolationWarning] = useState(false);
   const MAX_VIOLATIONS = 5;
 
@@ -85,7 +88,17 @@ export default function ExamPage() {
           }
         }
       })
-      .catch((err) => setError(err.response?.data?.message || 'Failed to load exam'))
+      .catch((err) => {
+        const msg = err.response?.data?.message || '';
+        if (err.response?.status === 403 && msg.toLowerCase().includes('already submitted')) {
+          clearSession(id);
+          navigate('/results', { replace: true });
+        } else if (err.response?.status === 401) {
+          navigate('/login', { replace: true });
+        } else {
+          setError(msg || 'Failed to load exam');
+        }
+      })
       .finally(() => setLoading(false));
   }, [id, user]);
 
