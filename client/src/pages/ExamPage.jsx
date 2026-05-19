@@ -184,7 +184,17 @@ export default function ExamPage() {
 
   useEffect(() => {
     if (!started) return;
-    const onBlur = () => {
+    let lastViolationTime = 0;
+    const COOLDOWN_MS = 2000; // prevent double-count within 2 seconds
+
+    const recordViolation = () => {
+      const now = Date.now();
+      // Only count if page is actually hidden (real tab switch, not power/system event)
+      // and cooldown has passed
+      if (!document.hidden) return;
+      if (now - lastViolationTime < COOLDOWN_MS) return;
+      lastViolationTime = now;
+
       setViolations(prev => {
         const next = prev + 1;
         setShowViolationWarning(true);
@@ -192,12 +202,10 @@ export default function ExamPage() {
         return next;
       });
     };
-    const onVisChange = () => { if (document.hidden) onBlur(); };
-    window.addEventListener('blur', onBlur);
-    document.addEventListener('visibilitychange', onVisChange);
+
+    document.addEventListener('visibilitychange', recordViolation);
     return () => {
-      window.removeEventListener('blur', onBlur);
-      document.removeEventListener('visibilitychange', onVisChange);
+      document.removeEventListener('visibilitychange', recordViolation);
     };
   }, [started, handleSubmit]);
 
