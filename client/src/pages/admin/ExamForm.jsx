@@ -1,11 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import api from '../../api/axios';
 import SchoolDeptSelect from '../../components/SchoolDeptSelect';
 import { useAuth } from '../../context/AuthContext';
 import QuestionUploader from '../../components/QuestionUploader';
 
 const emptyQuestion = () => ({ text: '', code: '', type: 'mcq', options: ['', '', '', ''], correctIndex: 0, correctText: '', points: 1 });
+
+const formatDuration = (minutes) => {
+  if (!minutes) return '0m';
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
+  return `${minutes}m`;
+};
 
 export default function ExamForm() {
   const { id } = useParams();
@@ -59,6 +70,84 @@ export default function ExamForm() {
   };
   const removeQuestion = (i) => setForm((prev) => ({ ...prev, questions: prev.questions.filter((_, idx) => idx !== i) }));
 
+  const handleExportPdf = () => {
+    if (!form.questions.length) {
+      setError('Add at least one question before exporting the PDF.');
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    const lineHeight = 6;
+    let y = 20;
+
+    const writeText = (text, font = 'normal', size = 11, indent = 0) => {
+      doc.setFont('helvetica', font);
+      doc.setFontSize(size);
+      const lines = doc.splitTextToSize(text, pageWidth - margin * 2 - indent);
+      doc.text(lines, margin + indent, y);
+      y += lines.length * lineHeight;
+    };
+
+    const safeTitle = (form.title || 'Untitled Exam').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'exam';
+
+    writeText(form.title || 'Untitled Exam', 'bold', 18);
+    y += 2;
+    writeText(`${form.subject || 'Subject not set'} • ${form.department || 'All departments'}`);
+    writeText(`Duration: ${formatDuration(form.duration)} • Passing score: ${form.passingScore}% • Active: ${form.isActive ? 'Yes' : 'No'}`);
+    if (form.description) {
+      writeText(`Description: ${form.description}`);
+    }
+    y += 4;
+
+    form.questions.forEach((question, index) => {
+      if (y > 250) {
+        doc.addPage();
+        y = 20;
+      }
+
+      writeText(`Q${index + 1}. ${question.type.toUpperCase()} • ${question.points || 1} point(s)`, 'bold', 12);
+      writeText(question.text || 'No question text provided');
+
+      if (question.code) {
+        writeText('Code snippet:', 'bold', 10);
+        const codeLines = doc.splitTextToSize(question.code, pageWidth - margin * 2);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(9);
+        doc.text(codeLines, margin, y);
+        y += codeLines.length * lineHeight;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+      }
+
+      if (question.type === 'mcq' && Array.isArray(question.options)) {
+        question.options.forEach((option, optionIndex) => {
+          const label = `${String.fromCharCode(65 + optionIndex)}. ${option || ''}`;
+          writeText(label, question.correctIndex === optionIndex ? 'bold' : 'normal');
+        });
+        const correctOption = question.options[question.correctIndex];
+        writeText(`Correct answer: ${correctOption ? `${String.fromCharCode(65 + question.correctIndex)}. ${correctOption}` : 'Not set'}`, 'bold');
+      }
+
+      if (question.type === 'truefalse') {
+        writeText(`Correct answer: ${question.correctIndex === 0 ? 'True' : 'False'}`, 'bold');
+      }
+
+      if (question.type === 'short') {
+        writeText(`Expected answer: ${question.correctText || 'Manual grading'}`);
+      }
+
+      if (question.type === 'essay') {
+        writeText(`Rubric / grading notes: ${question.correctText || 'Manual grading'}`);
+      }
+
+      y += 4;
+    });
+
+    doc.save(`${safeTitle}-questions.pdf`);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -94,9 +183,18 @@ export default function ExamForm() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto px-4 xl:px-8">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate('/admin/exams')} className="text-gray-500 hover:text-gray-700">← Back</button>
-          <h1 className="text-2xl font-bold text-gray-800">{isEdit ? 'Edit Exam' : 'Create New Exam'}</h1>
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/admin/exams')} className="text-gray-500 hover:text-gray-700">← Back</button>
+            <h1 className="text-2xl font-bold text-gray-800">{isEdit ? 'Edit Exam' : 'Create New Exam'}</h1>
+          </div>
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
+          >
+            Export Questions PDF
+          </button>
         </div>
 
         {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{error}</div>}

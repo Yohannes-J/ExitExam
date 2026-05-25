@@ -20,12 +20,34 @@ router.get('/exams', async (req, res) => {
     const query = isTeacher(req.user)
       ? { $or: [{ department: { $in: [req.user.department, 'All', ...teacherDepts(req.user)] } }] }
       : {};
-    const exams = await Exam.find(query).sort({ createdAt: -1 });
+    const exams = await Exam.find(query)
+      .populate('createdBy', 'name')
+      .sort({ createdAt: -1 });
     res.json(exams);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+const getExamCreatorId = (exam) => {
+  if (!exam?.createdBy) return null;
+
+  if (typeof exam.createdBy === 'string') return exam.createdBy;
+  if (exam.createdBy._id) return exam.createdBy._id.toString();
+  if (typeof exam.createdBy.toString === 'function' && exam.createdBy.toString() !== '[object Object]') {
+    return exam.createdBy.toString();
+  }
+
+  return null;
+};
+
+const canEditExam = (user, exam) => {
+  if (!user || !exam) return false;
+  if (user.role === 'admin') return true;
+  if (user.role !== 'teacher') return false;
+
+  return getExamCreatorId(exam) === user._id.toString();
+};
 
 router.post('/exams', async (req, res) => {
   try {
@@ -48,12 +70,17 @@ router.put('/exams/:id', async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
-    if (isTeacher(req.user) && exam.department !== req.user.department && exam.department !== 'All') {
+
+    if (!canEditExam(req.user, exam)) {
       return res.status(403).json({ message: 'Access denied to this exam' });
     }
-    const updateData = { ...req.body };
-    
-    if (isTeacher(req.user)) updateData.department = req.user.department;
+
+    const { createdBy, createdAt, updatedAt, __v, _id, ...updateData } = req.body;
+
+    if (isTeacher(req.user)) {
+      updateData.department = req.user.department;
+    }
+
     const updated = await Exam.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updated);
   } catch (err) {
@@ -65,7 +92,7 @@ router.delete('/exams/:id', async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
-    if (isTeacher(req.user) && exam.department !== req.user.department) {
+    if (!canEditExam(req.user, exam)) {
       return res.status(403).json({ message: 'Access denied' });
     }
     await Exam.findByIdAndDelete(req.params.id);
