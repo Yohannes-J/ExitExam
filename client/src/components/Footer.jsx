@@ -15,7 +15,8 @@ export default function Footer() {
             <p className="text-gray-500 text-xs">Empowering students through digital assessment</p>
           </div>
 
-          {}
+          {/* Contact Information */}
+
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-8">
             <a href="mailto:yohannesjohn126@gmail.com"
               className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition group">
