@@ -38,6 +38,7 @@ export default function Navbar() {
     { to: '/admin/schools', label: 'Schools' },
     { to: '/admin/results', label: 'Results' },
     { to: '/admin/reports', label: 'Reports' },
+    { to: '/admin/feedback', label: 'Feedback' },
     { to: '/admin/profile', label: 'Profile' },
   ];
 
@@ -52,6 +53,7 @@ export default function Navbar() {
   const studentLinks = [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/results', label: 'My Results' },
+    { to: '/feedback', label: 'Feedback' },
     { to: '/profile', label: 'Profile' },
   ];
 

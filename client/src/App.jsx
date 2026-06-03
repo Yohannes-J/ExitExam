@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import ExamPage from './pages/ExamPage';
 import Results from './pages/Results';
 import ResultDetail from './pages/ResultDetail';
+import StudentFeedback from './pages/StudentFeedback';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminExams from './pages/admin/AdminExams';
@@ -20,6 +21,7 @@ import AdminProfile from './pages/admin/AdminProfile';
 import AdminReports from './pages/admin/AdminReports';
 import AdminResultDetail from './pages/admin/AdminResultDetail';
 import AdminSchools from './pages/admin/AdminSchools';
+import AdminFeedback from './pages/admin/AdminFeedback';
 import TeacherStudents from './pages/admin/TeacherStudents';
 import StudentProfile from './pages/StudentProfile';
 
@@ -62,6 +64,11 @@ export default function App() {
           <Route path="/results/:id" element={
             <ProtectedRoute>
               <Layout><ResultDetail /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/feedback" element={
+            <ProtectedRoute>
+              <Layout><StudentFeedback /></Layout>
             </ProtectedRoute>
           } />
 
@@ -114,6 +121,11 @@ export default function App() {
           <Route path="/admin/schools" element={
             <ProtectedRoute adminOnly>
               <Layout><AdminSchools /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/feedback" element={
+            <ProtectedRoute adminOnly>
+              <Layout><AdminFeedback /></Layout>
             </ProtectedRoute>
           } />
           <Route path="/admin/my-students" element={

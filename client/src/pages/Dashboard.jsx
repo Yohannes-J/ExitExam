@@ -1,20 +1,76 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [newFeedbackAlert, setNewFeedbackAlert] = useState(0);
+  const [previousFeedback, setPreviousFeedback] = useState([]);
 
   useEffect(() => {
     api.get('/exams')
       .then((res) => setExams(res.data))
       .catch((err) => setError(err.response?.data?.message || 'Failed to load exams'))
       .finally(() => setLoading(false));
+
+    // Initialize previous feedback and request notification permission
+    const initFeedback = async () => {
+      try {
+        const res = await api.get('/feedback/student/my');
+        setPreviousFeedback(res.data);
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+      } catch (err) {
+        console.error('Error initializing feedback:', err);
+      }
+    };
+
+    initFeedback();
   }, []);
+
+  useEffect(() => {
+    if (previousFeedback.length === 0) return; // Only run after previous feedback is initialized
+
+    const checkNewFeedback = async () => {
+      try {
+        const res = await api.get('/feedback/student/my');
+        // Find feedback items that NOW have a response but DIDN'T have one before
+        const newResponses = res.data.filter(f => 
+          f.adminResponse && 
+          !previousFeedback.find(old => old._id === f._id && old.adminResponse)
+        );
+        
+        if (newResponses.length > 0) {
+          setNewFeedbackAlert(newResponses.length);
+          // Show browser notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('New Feedback Response', {
+              body: `You have ${newResponses.length} new response(s) from admin`,
+              icon: '💬'
+            });
+          }
+        } else {
+          // Clear alert if no new responses detected
+          setNewFeedbackAlert(0);
+        }
+        
+        // Always update the previous state for next check
+        setPreviousFeedback(res.data);
+      } catch (err) {
+        console.error('Error checking for new feedback:', err);
+      }
+    };
+
+    const interval = setInterval(checkNewFeedback, 10000);
+    return () => clearInterval(interval);
+  }, [previousFeedback]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -38,6 +94,21 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+
+        {newFeedbackAlert > 0 && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6 flex items-center justify-between">
+            <span>🔔 You have <strong>{newFeedbackAlert}</strong> new response(s) from admin!</span>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => navigate('/feedback')}
+                className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition font-medium text-sm"
+              >
+                View Response
+              </button>
+              <button onClick={() => setNewFeedbackAlert(0)} className="text-green-600 hover:text-green-800 font-bold">✕</button>
+            </div>
+          </div>
+        )}
 
         <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Available Exams</h2>
 

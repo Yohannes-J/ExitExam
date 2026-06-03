@@ -8,6 +8,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ exams: 0, results: 0, students: 0, admins: 0 });
   const [recentResults, setRecentResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newFeedbackCount, setNewFeedbackCount] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -21,6 +22,43 @@ export default function AdminDashboard() {
       setRecentResults(results.data.slice(0, 5));
     }).finally(() => setLoading(false));
   }, []);
+
+  // Check for new feedback only for admins
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // Initial check
+    checkNewFeedback();
+
+    // Check every 10 seconds
+    const interval = setInterval(checkNewFeedback, 10000);
+    return () => clearInterval(interval);
+  }, [user?.role]);
+
+  const checkNewFeedback = async () => {
+    try {
+      const res = await api.get('/feedback?status=new');
+      const count = res.data.length;
+      if (count > 0 && count > newFeedbackCount) {
+        setNewFeedbackCount(count);
+        // Show browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('New Student Feedback', {
+            body: `You have ${count} new feedback submission(s) waiting for review`,
+            icon: '💬'
+          });
+        }
+      }
+      setNewFeedbackCount(count);
+    } catch (err) {
+      console.error('Error checking feedback:', err);
+    }
+  };
 
   const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
@@ -42,6 +80,20 @@ export default function AdminDashboard() {
             </p>
           </div>
         </div>
+
+        {user?.role === 'admin' && newFeedbackCount > 0 && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg mb-6 flex items-center justify-between">
+            <span className="text-sm font-medium">
+              🔔 You have <strong>{newFeedbackCount}</strong> new student feedback waiting for review
+            </span>
+            <Link
+              to="/admin/feedback"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-1.5 rounded text-sm font-medium transition"
+            >
+              View Now
+            </Link>
+          </div>
+        )}
 
         {}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">          {[
@@ -71,10 +123,10 @@ export default function AdminDashboard() {
             <div className="font-bold text-sm sm:text-base">Manage Students</div>
             <div className="text-purple-200 text-xs sm:text-sm mt-0.5">Add, edit or remove accounts</div>
           </Link>
-          <Link to="/admin/results" className="bg-green-600 hover:bg-green-700 text-white rounded-xl p-4 sm:p-5 transition">
-            <div className="text-2xl mb-1">📈</div>
-            <div className="font-bold text-sm sm:text-base">View All Results</div>
-            <div className="text-green-200 text-xs sm:text-sm mt-0.5">Monitor student performance</div>
+          <Link to="/admin/feedback" className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl p-4 sm:p-5 transition">
+            <div className="text-2xl mb-1">💬</div>
+            <div className="font-bold text-sm sm:text-base">View Feedback</div>
+            <div className="text-amber-200 text-xs sm:text-sm mt-0.5">Student feedback & suggestions</div>
           </Link>
         </div>
 

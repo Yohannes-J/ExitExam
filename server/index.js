@@ -10,6 +10,7 @@ import examRoutes from './routes/exam.js';
 import resultRoutes from './routes/result.js';
 import adminRoutes from './routes/admin.js';
 import schoolRoutes from './routes/school.js';
+import feedbackRoutes from './routes/feedback.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/exams', examRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/schools', schoolRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));
