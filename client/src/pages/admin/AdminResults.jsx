@@ -134,7 +134,11 @@ export default function AdminResults() {
     filtered.length / PAGE_SIZE
   );
 
-  const paginated = filtered.slice(
+  const sorted = [...filtered].sort(
+    (a, b) => b.percentage - a.percentage
+  );
+
+  const paginated = sorted.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE
   );
